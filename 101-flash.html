@@ -91,7 +91,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </head>
 <body>
 
-<a id="backBtn" href="ritnome-mobi-index.html">← Back</a>
+<a id="backBtn" href="index.html">← Back</a>
 
 <div id="hud">
   <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
@@ -173,7 +173,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div id="endSub">Great taps. Beat this number next time!</div>
   <button class="next-player-btn" id="nextPlayerBtn">Next Player</button>
   <button class="box-open-btn" id="openBoxBtnEnd">📊 BOX SCORE</button>
-  <a id="endBackBtn" href="ritnome-mobi-index.html" style="margin-top:20px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
+  <a id="endBackBtn" href="index.html" style="margin-top:20px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
 </div>
 
 <script>
@@ -333,7 +333,15 @@ function endDrill(){
   if(phase==='done')return;
   phase='done';clearInterval(beatTimer);
   stimulus.classList.remove('visible');
-  var finalScore=score;
+  // The live HUD score stays floored at 0 throughout play so it never
+  // shows a negative number mid-game — but that same floor makes the
+  // running total order-dependent (misses early in a session "cost"
+  // less than misses late, once a buffer of points exists). The final
+  // score people actually judge the game by needs to be a simple,
+  // order-independent read of the real result, so it's recalculated
+  // directly from the final counts here rather than carried over from
+  // the accumulated running total.
+  var finalScore=Math.max(0,(correctCount*2)-(misses*2));
   var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
   var isNewPts=finalScore>best;
   if(isNewPts){best=finalScore;saveBest()}

@@ -113,8 +113,8 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <!-- INTRO -->
 <div id="screen-intro">
   <div class="vrr-logo">GO <span>/ NO-GO</span></div>
-  <div class="vrr-sub">Ritnome Memory · 120 BPM</div>
-  <div class="rule-t"><b>50 targets, plus at least 10 No-Go beats mixed in.</b> The target stays put — only the arrow it's carrying changes, right on the beat, 120 BPM. When the arrow is <b>white</b>, tap the direction before it changes. When it's <b>any other color</b>, hold back — don't tap at all. Tapping on a non-white arrow costs you 2 points.</div>
+  <div class="vrr-sub">Ritnome Memory · 60 BPM</div>
+  <div class="rule-t"><b>50 targets, plus at least 10 No-Go beats mixed in.</b> The target stays put — only the arrow it's carrying changes, right on the beat, 60 BPM. When the arrow is <b>white</b>, tap the direction before it changes. When it's <b>any other color</b>, hold back — don't tap at all. Tapping on a non-white arrow costs you 2 points.</div>
   <button class="big-btn" id="bigStart" onclick="startDrill()">START</button>
   <div class="best-line" id="bestLine"></div>
   <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
@@ -177,7 +177,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </div>
 
 <script>
-var BPM=120;
+var BPM=60;
 var BEAT_MS=Math.round(60000/BPM); // ~333ms — one fresh direction window per beat
 var TOTAL=50; // 50 white-arrow (Go) beats specifically
 var TOTAL_NOGO=10; // guaranteed minimum — a fixed pool shuffled into

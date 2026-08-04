@@ -318,7 +318,11 @@ function beatTick(){
 
   answeredThisBeat=false;
   awaitingResponse=true;
-  currentSide=DIRS[Math.floor(Math.random()*DIRS.length)];
+  // Never repeat the direction that just showed — pick randomly from
+  // the other three instead of all four, so every beat is guaranteed
+  // to actually change, not just usually change.
+  var pool=DIRS.filter(function(d){return d!==currentSide});
+  currentSide=pool[Math.floor(Math.random()*pool.length)];
   stimArrow.style.transform='rotate('+DIR_DEG[currentSide]+'deg)';
   $('hLeft').textContent=Math.max(0,TOTAL-idx+1);
 }

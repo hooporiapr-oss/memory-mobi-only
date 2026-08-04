@@ -453,14 +453,32 @@ function playPreviewDrum(){
   var c=getBeatAC();if(!c)return;
   try{
     if(c.state==='suspended')c.resume();
+
+    // Main body — a low, punchy pitch-drop, same shape as before but
+    // significantly louder (0.35 -> 0.85 peak gain, close to full
+    // headroom without risking clipping).
     var o=c.createOscillator(),g=c.createGain();
     o.type='sine';
     o.frequency.setValueAtTime(150,c.currentTime);
     o.frequency.exponentialRampToValueAtTime(45,c.currentTime+0.12);
-    g.gain.setValueAtTime(0.35,c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.18);
+    g.gain.setValueAtTime(0.85,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.2);
     o.connect(g);g.connect(c.destination);
-    o.start();o.stop(c.currentTime+0.2);
+    o.start();o.stop(c.currentTime+0.22);
+
+    // A very short, sharp attack transient layered on top of the main
+    // hit — real drum hits have a percussive "click" at the instant of
+    // impact, not just the low body. This makes the beat read as
+    // louder and punchier without needing to push the low end even
+    // further, which risks muddiness rather than clarity.
+    var o2=c.createOscillator(),g2=c.createGain();
+    o2.type='triangle';
+    o2.frequency.setValueAtTime(900,c.currentTime);
+    o2.frequency.exponentialRampToValueAtTime(200,c.currentTime+0.03);
+    g2.gain.setValueAtTime(0.5,c.currentTime);
+    g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.045);
+    o2.connect(g2);g2.connect(c.destination);
+    o2.start();o2.stop(c.currentTime+0.05);
   }catch(e){}
 }
 

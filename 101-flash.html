@@ -200,7 +200,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="final-num" id="endNum">0</div>
   <div class="final-label">Total Points</div>
   <div class="final-avgms" id="endAvgMs"></div>
-  <button class="hear-bpm-btn" id="hearBpmBtn" style="display:none"><span class="beat-dot-ind" id="beatDotInd"></span> Hear Your Tempo</button>
+  <button class="hear-bpm-btn" id="hearBpmBtn" style="display:none"><span class="beat-dot-ind" id="beatDotInd"></span> Hear Your Ritnome</button>
   <div class="final-acc" id="endAcc"></div>
   <div class="final-misses" id="endMisses"></div>
   <h2 id="endHead">Drill Complete!</h2>
@@ -443,7 +443,7 @@ function endDrill(){
 
 $('nextPlayerBtn').onclick=function(){$('screen-end').style.display='none';startDrill()};
 
-// "Hear Your Tempo" — plays 10 real drum beats at the player's own
+// "Hear Your Ritnome" — plays 10 real drum beats at the player's own
 // average BPM, so a number like "184 BPM" becomes something they can
 // actually feel, not just read. Same kick-drum synthesis style used
 // elsewhere in Ritnome/Hooporia — a quick pitch drop plus a fast decay.

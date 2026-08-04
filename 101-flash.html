@@ -138,8 +138,8 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <!-- INTRO -->
 <div id="screen-intro">
   <div class="vrr-logo">FLASH <span>REACTION</span></div>
-  <div class="vrr-sub">Ritnome Memory · 60 BPM</div>
-  <div class="rule-t"><b>50 beats.</b> The target stays put — only the arrow it's carrying changes, right on the beat, 60 BPM. Tap the direction shown before it changes to the next one. Miss the window or tap the wrong way, and it costs you.</div>
+  <div class="vrr-sub">Ritnome Memory · Reaction Speed</div>
+  <div class="rule-t"><b>50 targets.</b> The target stays put — only the arrow it's carrying changes. Read it and tap the matching direction as fast as you can — the faster you react, the more points you score. Take too long (at least 40 BPM, so you always have a real window) or tap the wrong way, and it costs you.</div>
   <button class="big-btn" id="bigStart" onclick="startDrill()">START</button>
   <div class="best-line" id="bestLine"></div>
   <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
@@ -205,18 +205,24 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </div>
 
 <script>
-var BPM=60;
-var BEAT_MS=Math.round(60000/BPM); // ~333ms — one fresh direction window per beat
+var TIMEOUT_BPM=40; // safety net only — not the scoring pace. Guarantees
+// a real, generous window (1500ms) to respond before a round is
+// forced to move on, rather than waiting forever.
+var RESPONSE_TIMEOUT_MS=Math.round(60000/TIMEOUT_BPM);
+var MISS_PENALTY=50; // flat cost for a wrong tap OR a timeout — same
+// penalty either way, since both are a failure to respond correctly.
 var TOTAL=50;
 var BEST_KEY='rct-101flash-best';
 var BOX_KEY='rct-101flash-boxscore';
 
 function $(id){return document.getElementById(id)}
+function bpmFromMs(v){return v?Math.round(60000/v):0}
 
 var phase='idle';
 var idx=0,score=0,best=0,correctCount=0,misses=0,totalRT=0,rtCount=0,shownAt=0;
-var currentSide=null,awaitingResponse=false,answeredThisBeat=false;
-var beatTimer=null;
+var totalPtsEarned=0,totalPenalty=0;
+var currentSide=null,awaitingResponse=false;
+var roundTimer=null;
 var stimulus=$('stimulus');
 var stimArrow=$('stimArrow');
 var DIR_DEG={left:270,right:90,up:0,down:180};
@@ -258,7 +264,7 @@ function renderBoxScore(lastGame){
     $('boxLastFg').textContent=l.made+'-'+l.attempts;
     $('boxLastFgPct').textContent=pct(l.made,l.attempts);
     $('boxLastMiss').textContent=l.miss;
-    $('boxLastMs').textContent=(typeof l.ms==='number'&&l.ms>0)?l.ms+' ms':'--';
+    $('boxLastMs').textContent=(typeof l.ms==='number'&&l.ms>0)?(l.ms+'ms · '+bpmFromMs(l.ms)+'bpm'):'--';
   }else{
     $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMiss').textContent='--';$('boxLastMs').textContent='--';
   }
@@ -267,13 +273,13 @@ function renderBoxScore(lastGame){
   $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
   $('boxHigh').textContent=d.high>0?d.high:'--';
   $('boxCareerMiss').textContent=d.gp>0?(d.totalMisses/d.gp).toFixed(1):'--';
-  $('boxCareerMs').textContent=d.gp>0?Math.round(d.totalMs/d.gp)+' ms':'--';
+  $('boxCareerMs').textContent=d.gp>0?(function(){var m=Math.round(d.totalMs/d.gp);return m+'ms · '+bpmFromMs(m)+'bpm';})():'--';
   var listEl=$('boxRecentList');
   if(!d.recent.length){
     listEl.innerHTML='<div class="box-empty">No games yet — play a round to start your box score.</div>';
   }else{
     listEl.innerHTML=d.recent.map(function(g){
-      var msText=(typeof g.ms==='number'&&g.ms>0)?(' · '+g.ms+'ms'):'';
+      var msText=(typeof g.ms==='number'&&g.ms>0)?(' · '+g.ms+'ms/'+bpmFromMs(g.ms)+'bpm'):'';
       return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+msText+'</span></div>';
     }).join('');
   }
@@ -298,44 +304,49 @@ function startDrill(){
 }
 
 function runDrill(){
-  phase='running';idx=0;score=0;correctCount=0;misses=0;totalRT=0;rtCount=0;
+  phase='running';idx=0;score=0;correctCount=0;misses=0;totalRT=0;rtCount=0;totalPtsEarned=0;totalPenalty=0;
   $('hScore').textContent='0';$('hLeft').textContent=TOTAL;$('hLastMs').textContent='--';
   stimulus.classList.add('visible');
-  beatTick();
-  beatTimer=setInterval(beatTick,BEAT_MS);
+  nextTarget();
 }
 
-// Every beat: resolve the PREVIOUS window (miss if nothing landed),
-// then present a fresh direction for the new window. The target
-// itself never moves — only the arrow on it changes.
-function beatTick(){
-  if(phase!=='running'){clearInterval(beatTimer);return}
-
-  if(idx>0 && !answeredThisBeat){
-    // no response landed during the window that just ended
-    misses++;
-    score=Math.max(0,score-2);
-    flashWrong();
-    msg('✗ MISSED! (-2)','wrong');
-    $('hScore').textContent=score;
-  }
-
+// Open-ended per round: the target waits for a real tap and scores on
+// how fast that tap actually was. No fixed beat forcing a response by
+// a specific instant — the only timing pressure is the generous
+// safety-net deadline below, so a miss always means a genuine miss,
+// not just bad luck on when the beat happened to land.
+function nextTarget(){
+  if(phase!=='running')return;
   idx++;
   if(idx>TOTAL){
     endDrill();
     return;
   }
 
-  answeredThisBeat=false;
   awaitingResponse=true;
   // Never repeat the direction that just showed — pick randomly from
-  // the other three instead of all four, so every beat is guaranteed
+  // the other three instead of all four, so every round is guaranteed
   // to actually change, not just usually change.
   var pool=DIRS.filter(function(d){return d!==currentSide});
   currentSide=pool[Math.floor(Math.random()*pool.length)];
   stimArrow.style.transform='rotate('+DIR_DEG[currentSide]+'deg)';
   shownAt=performance.now();
   $('hLeft').textContent=Math.max(0,TOTAL-idx+1);
+
+  clearTimeout(roundTimer);
+  roundTimer=setTimeout(handleTimeout,RESPONSE_TIMEOUT_MS);
+}
+
+function handleTimeout(){
+  if(phase!=='running'||!awaitingResponse)return;
+  awaitingResponse=false;
+  misses++;
+  totalPenalty+=MISS_PENALTY;
+  score=Math.max(0,score-MISS_PENALTY);
+  flashWrong();
+  msg('✗ TOO SLOW! (-'+MISS_PENALTY+')','wrong');
+  $('hScore').textContent=score;
+  nextTarget();
 }
 
 function flashWrong(){
@@ -344,26 +355,34 @@ function flashWrong(){
 }
 
 function handleChoice(side){
-  if(phase!=='running'||!awaitingResponse||answeredThisBeat)return;
-  answeredThisBeat=true;
+  if(phase!=='running'||!awaitingResponse)return;
   awaitingResponse=false;
+  clearTimeout(roundTimer);
 
   if(side===currentSide){
     var rt=performance.now()-shownAt;
+    // Speed-based scoring — faster reactions score more. A near-instant
+    // tap scores close to the 300-point ceiling; anything past about
+    // 1.2 seconds still earns the 1-point floor rather than nothing,
+    // so a correct-but-slow tap is never worse than a genuine miss.
+    var pts=Math.max(1,Math.round(300-rt/4));
     correctCount++;
-    score+=2;
+    totalPtsEarned+=pts;
+    score+=pts;
     totalRT+=rt;rtCount++;
-    $('hLastMs').textContent=Math.round(rt);
+    $('hLastMs').textContent=Math.round(rt)+'ms · '+bpmFromMs(rt)+' BPM';
     stimulus.classList.add('hit');
     setTimeout(function(){stimulus.classList.remove('hit')},100);
-    msg('✓ +2! ('+Math.round(rt)+' MS)','correct');
+    msg('✓ +'+pts+'! ('+Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM)','correct');
   }else{
     misses++;
-    score=Math.max(0,score-2);
+    totalPenalty+=MISS_PENALTY;
+    score=Math.max(0,score-MISS_PENALTY);
     flashWrong();
-    msg('✗ WRONG! (-2)','wrong');
+    msg('✗ WRONG! (-'+MISS_PENALTY+')','wrong');
   }
   $('hScore').textContent=score;
+  nextTarget();
 }
 
 $('btnUp').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('up')});
@@ -373,7 +392,7 @@ $('btnRight').addEventListener('pointerdown',function(e){e.preventDefault();hand
 
 function endDrill(){
   if(phase==='done')return;
-  phase='done';clearInterval(beatTimer);
+  phase='done';clearTimeout(roundTimer);
   stimulus.classList.remove('visible');
   // The live HUD score stays floored at 0 throughout play so it never
   // shows a negative number mid-game — but that same floor makes the
@@ -383,16 +402,22 @@ function endDrill(){
   // order-independent read of the real result, so it's recalculated
   // directly from the final counts here rather than carried over from
   // the accumulated running total.
-  var finalScore=Math.max(0,(correctCount*2)-(misses*2));
+  // Same order-independence principle as before, but adapted for
+  // variable speed-based points: the final score is the true sum of
+  // every point actually earned minus every real penalty, tracked in
+  // accumulators that are never floored mid-game — not derived from
+  // the live HUD score, which stays floored at 0 for display and would
+  // otherwise make the result depend on which order things happened in.
+  var finalScore=Math.max(0,totalPtsEarned-totalPenalty);
   var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
   var avgRT=rtCount?Math.round(totalRT/rtCount):0;
   var isNewPts=finalScore>best;
   if(isNewPts){best=finalScore;saveBest()}
 
   $('endNum').textContent=finalScore;
-  $('endAvgMs').textContent=avgRT>0?('Avg '+avgRT+' MS'):'';
+  $('endAvgMs').textContent=avgRT>0?('Avg '+avgRT+' MS · '+bpmFromMs(avgRT)+' BPM'):'';
   $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
-  $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES')+(misses>0?' (-'+(misses*2)+' PTS)':'');
+  $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES')+(misses>0?' (-'+totalPenalty+' PTS)':'');
   $('endMisses').className='final-misses'+(misses===0?' clean':'');
 
   if(isNewPts&&finalScore>0){

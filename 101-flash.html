@@ -73,6 +73,11 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .final-label{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:8px}
 .final-acc{margin-top:10px;font-size:1rem;color:#ff6b7f;font-weight:700}
 .final-avgms{margin-top:6px;font-size:1.3rem;font-weight:900;color:var(--cy)}
+.hear-bpm-btn{margin-top:10px;height:44px;padding:0 22px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:14px;color:var(--cy);font-size:.8rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.hear-bpm-btn:active{background:rgba(0,229,255,.25);transform:scale(.97)}
+.hear-bpm-btn:disabled{opacity:.4;cursor:default}
+.hear-bpm-btn .beat-dot-ind{width:8px;height:8px;border-radius:50%;background:var(--cy);transition:transform .08s,opacity .08s}
+.hear-bpm-btn .beat-dot-ind.pulse{transform:scale(1.8);opacity:.4}
 .final-misses{margin-top:10px;font-size:1.1rem;font-weight:900;color:var(--red)}
 .final-misses.clean{color:#00D9A5}
 #screen-end h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:1px;margin:20px 0 6px}
@@ -195,6 +200,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="final-num" id="endNum">0</div>
   <div class="final-label">Total Points</div>
   <div class="final-avgms" id="endAvgMs"></div>
+  <button class="hear-bpm-btn" id="hearBpmBtn" style="display:none"><span class="beat-dot-ind" id="beatDotInd"></span> Hear Your Tempo</button>
   <div class="final-acc" id="endAcc"></div>
   <div class="final-misses" id="endMisses"></div>
   <h2 id="endHead">Drill Complete!</h2>
@@ -221,6 +227,7 @@ function bpmFromMs(v){return v?Math.round(60000/v):0}
 var phase='idle';
 var idx=0,score=0,best=0,correctCount=0,misses=0,totalRT=0,rtCount=0,shownAt=0;
 var totalPtsEarned=0,totalPenalty=0;
+var lastAvgBpm=0,beatPreviewPlaying=false;
 var currentSide=null,awaitingResponse=false;
 var roundTimer=null;
 var stimulus=$('stimulus');
@@ -416,6 +423,8 @@ function endDrill(){
 
   $('endNum').textContent=finalScore;
   $('endAvgMs').textContent=avgRT>0?('Avg '+avgRT+' MS · '+bpmFromMs(avgRT)+' BPM'):'';
+  lastAvgBpm=avgRT>0?bpmFromMs(avgRT):0;
+  $('hearBpmBtn').style.display=lastAvgBpm>0?'inline-flex':'none';
   $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
   $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES')+(misses>0?' (-'+totalPenalty+' PTS)':'');
   $('endMisses').className='final-misses'+(misses===0?' clean':'');
@@ -433,6 +442,49 @@ function endDrill(){
 }
 
 $('nextPlayerBtn').onclick=function(){$('screen-end').style.display='none';startDrill()};
+
+// "Hear Your Tempo" — plays 10 real drum beats at the player's own
+// average BPM, so a number like "184 BPM" becomes something they can
+// actually feel, not just read. Same kick-drum synthesis style used
+// elsewhere in Ritnome/Hooporia — a quick pitch drop plus a fast decay.
+var beatAudioCtx=null;
+function getBeatAC(){if(!beatAudioCtx){try{beatAudioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return beatAudioCtx}
+function playPreviewDrum(){
+  var c=getBeatAC();if(!c)return;
+  try{
+    if(c.state==='suspended')c.resume();
+    var o=c.createOscillator(),g=c.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(150,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(45,c.currentTime+0.12);
+    g.gain.setValueAtTime(0.35,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.18);
+    o.connect(g);g.connect(c.destination);
+    o.start();o.stop(c.currentTime+0.2);
+  }catch(e){}
+}
+
+$('hearBpmBtn').addEventListener('click',function(){
+  if(beatPreviewPlaying||lastAvgBpm<=0)return;
+  beatPreviewPlaying=true;
+  var btn=$('hearBpmBtn'),dot=$('beatDotInd');
+  btn.disabled=true;
+  var beatMs=Math.round(60000/lastAvgBpm);
+  var count=0;
+  function tick(){
+    if(count>=10){
+      beatPreviewPlaying=false;
+      btn.disabled=false;
+      return;
+    }
+    playPreviewDrum();
+    dot.classList.add('pulse');
+    setTimeout(function(){dot.classList.remove('pulse')},Math.min(140,beatMs*0.3));
+    count++;
+    setTimeout(tick,beatMs);
+  }
+  tick();
+});
 
 loadBest();
 </script>

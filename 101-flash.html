@@ -113,8 +113,8 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <!-- INTRO -->
 <div id="screen-intro">
   <div class="vrr-logo">FLASH <span>REACTION</span></div>
-  <div class="vrr-sub">Ritnome Memory · 120 BPM</div>
-  <div class="rule-t"><b>50 beats.</b> The target stays put — only the arrow it's carrying changes, right on the beat, 120 BPM. Tap the direction shown before it changes to the next one. Miss the window or tap the wrong way, and it costs you.</div>
+  <div class="vrr-sub">Ritnome Memory · 60 BPM</div>
+  <div class="rule-t"><b>50 beats.</b> The target stays put — only the arrow it's carrying changes, right on the beat, 60 BPM. Tap the direction shown before it changes to the next one. Miss the window or tap the wrong way, and it costs you.</div>
   <button class="big-btn" id="bigStart" onclick="startDrill()">START</button>
   <div class="best-line" id="bestLine"></div>
   <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
@@ -177,7 +177,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </div>
 
 <script>
-var BPM=120;
+var BPM=60;
 var BEAT_MS=Math.round(60000/BPM); // ~333ms — one fresh direction window per beat
 var TOTAL=50;
 var BEST_KEY='rct-101flash-best';

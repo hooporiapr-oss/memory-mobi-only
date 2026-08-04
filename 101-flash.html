@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Flash Reaction | Ritnome Memory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#ff1e3c;--red-deep:#c8102e;--dark:#0a0a0f;--card:#111118;--text:#fff;--muted:#8892a0;--border:rgba(255,255,255,0.1);--cy:#00e5ff}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overflow:hidden}
+
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,rgba(0,0,0,.8),transparent)}
+.hud-box{text-align:center}
+.hud-label{font-size:.55rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:2px}
+.hud-val{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:1px;line-height:1}
+#hLeft{color:#ff6b7f}#hScore{color:#fff;font-size:2.1rem}#hBest{font-size:1.1rem;color:var(--muted)}
+
+#msg{position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:20;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;text-align:center;pointer-events:none;transition:opacity .2s;width:90%}
+#msg.watch{color:var(--red)}#msg.correct{color:#00D9A5}#msg.wrong{color:var(--red)}
+
+/* Stagnant, centered target — never moves. Only the arrow it carries
+   changes, on the beat. */
+#stageWrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:22vh}
+#stimulus{
+  width:34vw;height:34vw;max-width:150px;max-height:150px;min-width:120px;min-height:120px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 32%,#6bfcff,var(--cy) 55%,#00a8c2 85%);
+  box-shadow:0 0 40px rgba(0,229,255,.85),0 0 80px rgba(0,229,255,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:min(14vw,3.2rem);color:#fff;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.6);
+  transition:box-shadow .1s;
+}
+#stimulus.hit{box-shadow:0 0 60px rgba(0,229,255,1),0 0 110px rgba(0,229,255,.6)}
+
+#choices{
+  position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:20;
+  display:grid;grid-template-columns:74px 74px 74px;grid-template-rows:64px 64px 64px;gap:8px;
+}
+.choice-btn{border:2px solid rgba(255,30,60,.4);background:rgba(255,30,60,.08);border-radius:14px;color:#fff;display:flex;align-items:center;justify-content:center;transition:all .08s}
+.choice-btn .arrow-glyph{font-size:1.7rem;line-height:1}
+.choice-btn:active{background:rgba(255,30,60,.35);transform:scale(.94)}
+#btnUp{grid-column:2;grid-row:1}
+#btnLeft{grid-column:1;grid-row:2}
+#btnRight{grid-column:3;grid-row:2}
+#btnDown{grid-column:2;grid-row:3}
+
+#backBtn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:14px;z-index:50;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.7rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;z-index:50}
+
+#screen-intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--dark);padding:24px;text-align:center}
+.vrr-logo{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:3px;text-transform:uppercase;color:#fff;text-shadow:0 0 32px rgba(255,30,60,.7);margin-bottom:4px}
+.vrr-logo span{color:var(--red)}
+.vrr-sub{font-size:.65rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:var(--red);margin-bottom:24px}
+.rule-t{font-size:.88rem;color:#c9ccd3;line-height:1.55;max-width:380px;margin-bottom:26px}
+.rule-t b{color:#fff}
+.big-btn{width:100%;max-width:340px;height:60px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(255,30,60,.6)}
+.best-line{margin-top:16px;font-size:.8rem;color:var(--muted)}
+.best-line b{color:var(--red)}
+.box-open-btn{width:100%;max-width:320px;height:48px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:14px;color:var(--cy);font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:18px}
+
+#screen-end{position:fixed;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--dark);text-align:center;padding:24px}
+.final-num{font-family:'Bebas Neue',sans-serif;font-size:5rem;color:var(--red);line-height:1;text-shadow:0 0 50px rgba(255,30,60,.8)}
+.final-label{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.final-acc{margin-top:10px;font-size:1rem;color:#ff6b7f;font-weight:700}
+.final-misses{margin-top:10px;font-size:1.1rem;font-weight:900;color:var(--red)}
+.final-misses.clean{color:#00D9A5}
+#screen-end h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:1px;margin:20px 0 6px}
+#endSub{font-size:.85rem;color:var(--muted);line-height:1.5;max-width:340px}
+.next-player-btn{margin-top:22px;height:56px;padding:0 34px;border:none;border-radius:16px;background:linear-gradient(120deg,var(--red),var(--red-deep));color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer}
+
+#screen-box{position:fixed;inset:0;z-index:58;display:none;flex-direction:column;align-items:center;background:var(--dark);padding:calc(60px + env(safe-area-inset-top)) 16px 24px;overflow-y:auto}
+.box-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;text-transform:uppercase;color:#fff}
+.box-title span{color:var(--red)}
+.box-sub{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:20px}
+.box-section{width:100%;max-width:360px;margin-bottom:20px}
+.box-section-label{font-size:.62rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#ff6b7f;margin-bottom:6px;text-align:left;padding-left:4px}
+.box-table{width:100%;border-collapse:collapse;background:rgba(255,30,60,.05);border:1px solid rgba(255,30,60,.25);border-radius:12px;overflow:hidden}
+.box-table th{background:rgba(255,30,60,.16);color:#ff6b7f;font-size:.56rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:7px 4px;text-align:center}
+.box-table td{padding:10px 4px;text-align:center;font-weight:900;font-size:1rem;color:#fff}
+.box-table .box-pts{color:var(--red);font-size:1.25rem}
+.box-empty{color:var(--muted);font-size:.8rem;padding:20px 8px;font-style:italic}
+.box-back-btn{width:100%;max-width:360px;height:50px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font-size:.9rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:4px}
+.box-recent-row{font-size:.7rem;color:var(--muted);padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between}
+.box-recent-row:last-child{border-bottom:none}
+.box-recent-row b{color:#ff6b7f}
+
+#countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:var(--dark)}
+#bigCount{font-family:'Bebas Neue',sans-serif;font-size:7rem;color:var(--red);text-shadow:0 0 50px rgba(255,30,60,.8)}
+</style>
+</head>
+<body>
+
+<a id="backBtn" href="ritnome-mobi-index.html">← Back</a>
+
+<div id="hud">
+  <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
+  <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
+  <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
+</div>
+
+<div id="msg" class="watch"></div>
+
+<div id="stageWrap"><div id="stimulus"></div></div>
+
+<div id="choices">
+  <button class="choice-btn" id="btnUp"><span class="arrow-glyph">▲</span></button>
+  <button class="choice-btn" id="btnLeft"><span class="arrow-glyph">◀</span></button>
+  <button class="choice-btn" id="btnRight"><span class="arrow-glyph">▶</span></button>
+  <button class="choice-btn" id="btnDown"><span class="arrow-glyph">▼</span></button>
+</div>
+
+<!-- INTRO -->
+<div id="screen-intro">
+  <div class="vrr-logo">FLASH <span>REACTION</span></div>
+  <div class="vrr-sub">Ritnome Memory · 180 BPM</div>
+  <div class="rule-t"><b>50 beats.</b> The target stays put — only the arrow it's carrying changes, right on the beat, 180 BPM. Tap the direction shown before it changes to the next one. Miss the window or tap the wrong way, and it costs you.</div>
+  <button class="big-btn" id="bigStart" onclick="startDrill()">▶ START</button>
+  <div class="best-line" id="bestLine"></div>
+  <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
+</div>
+
+<!-- BOX SCORE -->
+<div id="screen-box">
+  <div class="box-title">BOX <span>SCORE</span></div>
+  <div class="box-sub">Flash Reaction · Career Stats</div>
+
+  <div class="box-section">
+    <div class="box-section-label">Last Game</div>
+    <table class="box-table">
+      <thead><tr><th>PTS</th><th>FG</th><th>FG%</th><th>MISS</th></tr></thead>
+      <tbody><tr>
+        <td class="box-pts" id="boxLastPts">--</td>
+        <td id="boxLastFg">--</td>
+        <td id="boxLastFgPct">--</td>
+        <td id="boxLastMiss">--</td>
+      </tr></tbody>
+    </table>
+  </div>
+
+  <div class="box-section">
+    <div class="box-section-label">Career</div>
+    <table class="box-table">
+      <thead><tr><th>GP</th><th>PPG</th><th>FG%</th><th>HIGH</th><th>MISS/G</th></tr></thead>
+      <tbody><tr>
+        <td id="boxGP">--</td>
+        <td class="box-pts" id="boxPPG">--</td>
+        <td id="boxCareerFgPct">--</td>
+        <td id="boxHigh">--</td>
+        <td id="boxCareerMiss">--</td>
+      </tr></tbody>
+    </table>
+  </div>
+
+  <div class="box-section">
+    <div class="box-section-label">Recent Games</div>
+    <div class="box-table" id="boxRecentList" style="border-radius:12px"></div>
+  </div>
+
+  <button class="box-back-btn" id="closeBoxBtn">← Back</button>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countdown"><div id="bigCount">3</div></div>
+
+<!-- END -->
+<div id="screen-end">
+  <div class="final-num" id="endNum">0</div>
+  <div class="final-label">Total Points</div>
+  <div class="final-acc" id="endAcc"></div>
+  <div class="final-misses" id="endMisses"></div>
+  <h2 id="endHead">Drill Complete!</h2>
+  <div id="endSub">Great taps. Beat this number next time!</div>
+  <button class="next-player-btn" id="nextPlayerBtn">▶ Next Player</button>
+  <button class="box-open-btn" id="openBoxBtnEnd">📊 BOX SCORE</button>
+  <a id="endBackBtn" href="ritnome-mobi-index.html" style="margin-top:20px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
+</div>
+
+<script>
+var BPM=180;
+var BEAT_MS=Math.round(60000/BPM); // ~333ms — one fresh direction window per beat
+var TOTAL=50;
+var BEST_KEY='rct-101flash-best';
+var BOX_KEY='rct-101flash-boxscore';
+
+function $(id){return document.getElementById(id)}
+
+var phase='idle';
+var idx=0,score=0,best=0,correctCount=0,misses=0;
+var currentSide=null,awaitingResponse=false,answeredThisBeat=false;
+var beatTimer=null;
+var stimulus=$('stimulus');
+var ARROWS={left:'◀',right:'▶',up:'▲',down:'▼'};
+var DIRS=['left','right','up','down'];
+
+function loadBest(){
+  best=0;
+  try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
+  $('hBest').textContent=best;
+  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' pts</b>'):'';
+}
+function saveBest(){try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
+
+function loadBoxData(){
+  try{
+    var raw=localStorage.getItem(BOX_KEY);
+    if(raw)return JSON.parse(raw);
+  }catch(e){}
+  return {gp:0,totalPts:0,totalMade:0,totalAttempts:0,totalMisses:0,high:0,recent:[]};
+}
+function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
+function recordGameToBoxScore(finalScore,made,attempts,missCount){
+  var d=loadBoxData();
+  d.gp++;d.totalPts+=finalScore;d.totalMade+=made;d.totalAttempts+=attempts;d.totalMisses+=missCount;
+  if(finalScore>d.high)d.high=finalScore;
+  d.recent.unshift({pts:finalScore,made:made,attempts:attempts,miss:missCount,date:new Date().toLocaleDateString()});
+  if(d.recent.length>8)d.recent=d.recent.slice(0,8);
+  saveBoxData(d);
+  return d;
+}
+function pct(made,attempts){return attempts>0?Math.round((made/attempts)*100)+'%':'--'}
+function renderBoxScore(lastGame){
+  var d=loadBoxData();
+  var l=lastGame||(d.recent.length?d.recent[0]:null);
+  if(l){
+    $('boxLastPts').textContent=l.pts;
+    $('boxLastFg').textContent=l.made+'-'+l.attempts;
+    $('boxLastFgPct').textContent=pct(l.made,l.attempts);
+    $('boxLastMiss').textContent=l.miss;
+  }else{
+    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMiss').textContent='--';
+  }
+  $('boxGP').textContent=d.gp;
+  $('boxPPG').textContent=d.gp>0?(d.totalPts/d.gp).toFixed(1):'--';
+  $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
+  $('boxHigh').textContent=d.high>0?d.high:'--';
+  $('boxCareerMiss').textContent=d.gp>0?(d.totalMisses/d.gp).toFixed(1):'--';
+  var listEl=$('boxRecentList');
+  if(!d.recent.length){
+    listEl.innerHTML='<div class="box-empty">No games yet — play a round to start your box score.</div>';
+  }else{
+    listEl.innerHTML=d.recent.map(function(g){
+      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+'</span></div>';
+    }).join('');
+  }
+}
+var boxReturnScreen='screen-intro';
+$('openBoxBtn').onclick=function(){boxReturnScreen='screen-intro';renderBoxScore(window.__lastGameBox);$('screen-intro').style.display='none';$('screen-box').style.display='flex';};
+$('openBoxBtnEnd').onclick=function(){boxReturnScreen='screen-end';renderBoxScore(window.__lastGameBox);$('screen-end').style.display='none';$('screen-box').style.display='flex';};
+$('closeBoxBtn').onclick=function(){$('screen-box').style.display='none';document.getElementById(boxReturnScreen).style.display='flex';};
+
+function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
+
+function startDrill(){
+  if(phase==='running')return;
+  $('screen-intro').style.display='none';
+  $('countdown').style.display='flex';
+  var n=3;$('bigCount').textContent=n;
+  var iv=setInterval(function(){
+    n--;
+    if(n<=0){clearInterval(iv);$('countdown').style.display='none';runDrill()}
+    else{$('bigCount').textContent=n}
+  },700);
+}
+
+function runDrill(){
+  phase='running';idx=0;score=0;correctCount=0;misses=0;
+  $('hScore').textContent='0';$('hLeft').textContent=TOTAL;
+  stimulus.classList.add('visible');
+  beatTick();
+  beatTimer=setInterval(beatTick,BEAT_MS);
+}
+
+// Every beat: resolve the PREVIOUS window (miss if nothing landed),
+// then present a fresh direction for the new window. The target
+// itself never moves — only the arrow on it changes.
+function beatTick(){
+  if(phase!=='running'){clearInterval(beatTimer);return}
+
+  if(idx>0 && !answeredThisBeat){
+    // no response landed during the window that just ended
+    misses++;
+    score=Math.max(0,score-2);
+    flashWrong();
+    msg('✗ MISSED! (-2)','wrong');
+    $('hScore').textContent=score;
+  }
+
+  idx++;
+  if(idx>TOTAL){
+    endDrill();
+    return;
+  }
+
+  answeredThisBeat=false;
+  awaitingResponse=true;
+  currentSide=DIRS[Math.floor(Math.random()*DIRS.length)];
+  stimulus.textContent=ARROWS[currentSide];
+  $('hLeft').textContent=Math.max(0,TOTAL-idx+1);
+}
+
+function flashWrong(){
+  stimulus.classList.add('hit');
+  setTimeout(function(){stimulus.classList.remove('hit')},100);
+}
+
+function handleChoice(side){
+  if(phase!=='running'||!awaitingResponse||answeredThisBeat)return;
+  answeredThisBeat=true;
+  awaitingResponse=false;
+
+  if(side===currentSide){
+    correctCount++;
+    score+=2;
+    stimulus.classList.add('hit');
+    setTimeout(function(){stimulus.classList.remove('hit')},100);
+    msg('✓ +2!','correct');
+  }else{
+    misses++;
+    score=Math.max(0,score-2);
+    flashWrong();
+    msg('✗ WRONG! (-2)','wrong');
+  }
+  $('hScore').textContent=score;
+}
+
+$('btnUp').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('up')});
+$('btnDown').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('down')});
+$('btnLeft').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('left')});
+$('btnRight').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('right')});
+
+function endDrill(){
+  if(phase==='done')return;
+  phase='done';clearInterval(beatTimer);
+  stimulus.classList.remove('visible');
+  var finalScore=score;
+  var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
+  var isNewPts=finalScore>best;
+  if(isNewPts){best=finalScore;saveBest()}
+
+  $('endNum').textContent=finalScore;
+  $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
+  $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES')+(misses>0?' (-'+(misses*2)+' PTS)':'');
+  $('endMisses').className='final-misses'+(misses===0?' clean':'');
+
+  if(isNewPts&&finalScore>0){
+    $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points!';
+  }else{
+    $('endHead').textContent='Drill Complete!';$('endSub').textContent='Great taps. Beat this number next time!';
+  }
+
+  window.__lastGameBox={pts:finalScore,made:correctCount,attempts:TOTAL,miss:misses,date:new Date().toLocaleDateString()};
+  recordGameToBoxScore(finalScore,correctCount,TOTAL,misses);
+
+  $('screen-end').style.display='flex';
+}
+
+$('nextPlayerBtn').onclick=function(){$('screen-end').style.display='none';startDrill()};
+
+loadBest();
+</script>
+</body>
+</html>

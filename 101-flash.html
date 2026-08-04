@@ -15,7 +15,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .hud-box{text-align:center}
 .hud-label{font-size:.55rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:2px}
 .hud-val{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:1px;line-height:1}
-#hLeft{color:#ff6b7f}#hScore{color:#fff;font-size:2.1rem}#hBest{font-size:1.1rem;color:var(--muted)}
+#hLeft{color:#ff6b7f}#hScore{color:#fff;font-size:2.1rem}#hLastMs{font-size:1.1rem;color:var(--cy)}#hBest{font-size:1.1rem;color:var(--muted)}
 
 #msg{position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:20;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;text-align:center;pointer-events:none;transition:opacity .2s;width:90%}
 #msg.watch{color:var(--red)}#msg.correct{color:#00D9A5}#msg.wrong{color:var(--red)}
@@ -72,6 +72,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .final-num{font-family:'Bebas Neue',sans-serif;font-size:5rem;color:var(--red);line-height:1;text-shadow:0 0 50px rgba(255,30,60,.8)}
 .final-label{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:8px}
 .final-acc{margin-top:10px;font-size:1rem;color:#ff6b7f;font-weight:700}
+.final-avgms{margin-top:6px;font-size:1.3rem;font-weight:900;color:var(--cy)}
 .final-misses{margin-top:10px;font-size:1.1rem;font-weight:900;color:var(--red)}
 .final-misses.clean{color:#00D9A5}
 #screen-end h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:1px;margin:20px 0 6px}
@@ -119,6 +120,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <div id="hud">
   <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
   <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
+  <div class="hud-box"><div class="hud-label">Last</div><div class="hud-val" id="hLastMs">--</div></div>
   <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
 </div>
 
@@ -151,12 +153,13 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="box-section">
     <div class="box-section-label">Last Game</div>
     <table class="box-table">
-      <thead><tr><th>PTS</th><th>FG</th><th>FG%</th><th>MISS</th></tr></thead>
+      <thead><tr><th>PTS</th><th>FG</th><th>FG%</th><th>MISS</th><th>MS</th></tr></thead>
       <tbody><tr>
         <td class="box-pts" id="boxLastPts">--</td>
         <td id="boxLastFg">--</td>
         <td id="boxLastFgPct">--</td>
         <td id="boxLastMiss">--</td>
+        <td id="boxLastMs">--</td>
       </tr></tbody>
     </table>
   </div>
@@ -164,13 +167,14 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="box-section">
     <div class="box-section-label">Career</div>
     <table class="box-table">
-      <thead><tr><th>GP</th><th>PPG</th><th>FG%</th><th>HIGH</th><th>MISS/G</th></tr></thead>
+      <thead><tr><th>GP</th><th>PPG</th><th>FG%</th><th>HIGH</th><th>MISS/G</th><th>AVG MS</th></tr></thead>
       <tbody><tr>
         <td id="boxGP">--</td>
         <td class="box-pts" id="boxPPG">--</td>
         <td id="boxCareerFgPct">--</td>
         <td id="boxHigh">--</td>
         <td id="boxCareerMiss">--</td>
+        <td id="boxCareerMs">--</td>
       </tr></tbody>
     </table>
   </div>
@@ -190,6 +194,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <div id="screen-end">
   <div class="final-num" id="endNum">0</div>
   <div class="final-label">Total Points</div>
+  <div class="final-avgms" id="endAvgMs"></div>
   <div class="final-acc" id="endAcc"></div>
   <div class="final-misses" id="endMisses"></div>
   <h2 id="endHead">Drill Complete!</h2>
@@ -209,7 +214,7 @@ var BOX_KEY='rct-101flash-boxscore';
 function $(id){return document.getElementById(id)}
 
 var phase='idle';
-var idx=0,score=0,best=0,correctCount=0,misses=0;
+var idx=0,score=0,best=0,correctCount=0,misses=0,totalRT=0,rtCount=0,shownAt=0;
 var currentSide=null,awaitingResponse=false,answeredThisBeat=false;
 var beatTimer=null;
 var stimulus=$('stimulus');
@@ -230,14 +235,15 @@ function loadBoxData(){
     var raw=localStorage.getItem(BOX_KEY);
     if(raw)return JSON.parse(raw);
   }catch(e){}
-  return {gp:0,totalPts:0,totalMade:0,totalAttempts:0,totalMisses:0,high:0,recent:[]};
+  return {gp:0,totalPts:0,totalMade:0,totalAttempts:0,totalMisses:0,totalMs:0,high:0,recent:[]};
 }
 function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
-function recordGameToBoxScore(finalScore,made,attempts,missCount){
+function recordGameToBoxScore(finalScore,made,attempts,missCount,avgMs){
   var d=loadBoxData();
-  d.gp++;d.totalPts+=finalScore;d.totalMade+=made;d.totalAttempts+=attempts;d.totalMisses+=missCount;
+  if(typeof d.totalMs!=='number')d.totalMs=0; // safe upgrade for any box score saved before this stat existed
+  d.gp++;d.totalPts+=finalScore;d.totalMade+=made;d.totalAttempts+=attempts;d.totalMisses+=missCount;d.totalMs+=avgMs;
   if(finalScore>d.high)d.high=finalScore;
-  d.recent.unshift({pts:finalScore,made:made,attempts:attempts,miss:missCount,date:new Date().toLocaleDateString()});
+  d.recent.unshift({pts:finalScore,made:made,attempts:attempts,miss:missCount,ms:avgMs,date:new Date().toLocaleDateString()});
   if(d.recent.length>8)d.recent=d.recent.slice(0,8);
   saveBoxData(d);
   return d;
@@ -245,26 +251,30 @@ function recordGameToBoxScore(finalScore,made,attempts,missCount){
 function pct(made,attempts){return attempts>0?Math.round((made/attempts)*100)+'%':'--'}
 function renderBoxScore(lastGame){
   var d=loadBoxData();
+  if(typeof d.totalMs!=='number')d.totalMs=0;
   var l=lastGame||(d.recent.length?d.recent[0]:null);
   if(l){
     $('boxLastPts').textContent=l.pts;
     $('boxLastFg').textContent=l.made+'-'+l.attempts;
     $('boxLastFgPct').textContent=pct(l.made,l.attempts);
     $('boxLastMiss').textContent=l.miss;
+    $('boxLastMs').textContent=(typeof l.ms==='number'&&l.ms>0)?l.ms+' ms':'--';
   }else{
-    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMiss').textContent='--';
+    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMiss').textContent='--';$('boxLastMs').textContent='--';
   }
   $('boxGP').textContent=d.gp;
   $('boxPPG').textContent=d.gp>0?(d.totalPts/d.gp).toFixed(1):'--';
   $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
   $('boxHigh').textContent=d.high>0?d.high:'--';
   $('boxCareerMiss').textContent=d.gp>0?(d.totalMisses/d.gp).toFixed(1):'--';
+  $('boxCareerMs').textContent=d.gp>0?Math.round(d.totalMs/d.gp)+' ms':'--';
   var listEl=$('boxRecentList');
   if(!d.recent.length){
     listEl.innerHTML='<div class="box-empty">No games yet — play a round to start your box score.</div>';
   }else{
     listEl.innerHTML=d.recent.map(function(g){
-      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+'</span></div>';
+      var msText=(typeof g.ms==='number'&&g.ms>0)?(' · '+g.ms+'ms'):'';
+      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+msText+'</span></div>';
     }).join('');
   }
 }
@@ -288,8 +298,8 @@ function startDrill(){
 }
 
 function runDrill(){
-  phase='running';idx=0;score=0;correctCount=0;misses=0;
-  $('hScore').textContent='0';$('hLeft').textContent=TOTAL;
+  phase='running';idx=0;score=0;correctCount=0;misses=0;totalRT=0;rtCount=0;
+  $('hScore').textContent='0';$('hLeft').textContent=TOTAL;$('hLastMs').textContent='--';
   stimulus.classList.add('visible');
   beatTick();
   beatTimer=setInterval(beatTick,BEAT_MS);
@@ -324,6 +334,7 @@ function beatTick(){
   var pool=DIRS.filter(function(d){return d!==currentSide});
   currentSide=pool[Math.floor(Math.random()*pool.length)];
   stimArrow.style.transform='rotate('+DIR_DEG[currentSide]+'deg)';
+  shownAt=performance.now();
   $('hLeft').textContent=Math.max(0,TOTAL-idx+1);
 }
 
@@ -338,11 +349,14 @@ function handleChoice(side){
   awaitingResponse=false;
 
   if(side===currentSide){
+    var rt=performance.now()-shownAt;
     correctCount++;
     score+=2;
+    totalRT+=rt;rtCount++;
+    $('hLastMs').textContent=Math.round(rt);
     stimulus.classList.add('hit');
     setTimeout(function(){stimulus.classList.remove('hit')},100);
-    msg('✓ +2!','correct');
+    msg('✓ +2! ('+Math.round(rt)+' MS)','correct');
   }else{
     misses++;
     score=Math.max(0,score-2);
@@ -371,10 +385,12 @@ function endDrill(){
   // the accumulated running total.
   var finalScore=Math.max(0,(correctCount*2)-(misses*2));
   var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
+  var avgRT=rtCount?Math.round(totalRT/rtCount):0;
   var isNewPts=finalScore>best;
   if(isNewPts){best=finalScore;saveBest()}
 
   $('endNum').textContent=finalScore;
+  $('endAvgMs').textContent=avgRT>0?('Avg '+avgRT+' MS'):'';
   $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
   $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES')+(misses>0?' (-'+(misses*2)+' PTS)':'');
   $('endMisses').className='final-misses'+(misses===0?' clean':'');
@@ -385,8 +401,8 @@ function endDrill(){
     $('endHead').textContent='Drill Complete!';$('endSub').textContent='Great taps. Beat this number next time!';
   }
 
-  window.__lastGameBox={pts:finalScore,made:correctCount,attempts:TOTAL,miss:misses,date:new Date().toLocaleDateString()};
-  recordGameToBoxScore(finalScore,correctCount,TOTAL,misses);
+  window.__lastGameBox={pts:finalScore,made:correctCount,attempts:TOTAL,miss:misses,ms:avgRT,date:new Date().toLocaleDateString()};
+  recordGameToBoxScore(finalScore,correctCount,TOTAL,misses,avgRT);
 
   $('screen-end').style.display='flex';
 }

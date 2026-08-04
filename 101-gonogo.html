@@ -104,18 +104,18 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <div id="stageWrap"><div id="stimulus"></div></div>
 
 <div id="choices">
-  <button class="choice-btn" id="btnUp"><span class="arrow-glyph">▲</span></button>
-  <button class="choice-btn" id="btnLeft"><span class="arrow-glyph">◀</span></button>
-  <button class="choice-btn" id="btnRight"><span class="arrow-glyph">▶</span></button>
-  <button class="choice-btn" id="btnDown"><span class="arrow-glyph">▼</span></button>
+  <button class="choice-btn" id="btnUp"><span class="arrow-glyph">↑</span></button>
+  <button class="choice-btn" id="btnLeft"><span class="arrow-glyph">←</span></button>
+  <button class="choice-btn" id="btnRight"><span class="arrow-glyph">→</span></button>
+  <button class="choice-btn" id="btnDown"><span class="arrow-glyph">↓</span></button>
 </div>
 
 <!-- INTRO -->
 <div id="screen-intro">
   <div class="vrr-logo">GO <span>/ NO-GO</span></div>
-  <div class="vrr-sub">Ritnome Memory · 180 BPM</div>
-  <div class="rule-t"><b>50 targets, plus at least 10 No-Go beats mixed in.</b> The target stays put — only the arrow it's carrying changes, right on the beat, 180 BPM. When the arrow is <b>white</b>, tap the direction before it changes. When it's <b>any other color</b>, hold back — don't tap at all. Tapping on a non-white arrow costs you 2 points.</div>
-  <button class="big-btn" id="bigStart" onclick="startDrill()">▶ START</button>
+  <div class="vrr-sub">Ritnome Memory · 120 BPM</div>
+  <div class="rule-t"><b>50 targets, plus at least 10 No-Go beats mixed in.</b> The target stays put — only the arrow it's carrying changes, right on the beat, 120 BPM. When the arrow is <b>white</b>, tap the direction before it changes. When it's <b>any other color</b>, hold back — don't tap at all. Tapping on a non-white arrow costs you 2 points.</div>
+  <button class="big-btn" id="bigStart" onclick="startDrill()">START</button>
   <div class="best-line" id="bestLine"></div>
   <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
 </div>
@@ -171,13 +171,13 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="final-misses" id="endMisses"></div>
   <h2 id="endHead">Drill Complete!</h2>
   <div id="endSub">Great taps. Beat this number next time!</div>
-  <button class="next-player-btn" id="nextPlayerBtn">▶ Next Player</button>
+  <button class="next-player-btn" id="nextPlayerBtn">Next Player</button>
   <button class="box-open-btn" id="openBoxBtnEnd">📊 BOX SCORE</button>
   <a id="endBackBtn" href="ritnome-mobi-index.html" style="margin-top:20px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
 </div>
 
 <script>
-var BPM=180;
+var BPM=120;
 var BEAT_MS=Math.round(60000/BPM); // ~333ms — one fresh direction window per beat
 var TOTAL=50; // 50 white-arrow (Go) beats specifically
 var TOTAL_NOGO=10; // guaranteed minimum — a fixed pool shuffled into
@@ -195,7 +195,7 @@ var idx=0,score=0,best=0,correctCount=0,misses=0,falseAlarms=0;
 var currentSide=null,currentArrowColor='white',awaitingResponse=false,answeredThisBeat=false;
 var beatTimer=null;
 var stimulus=$('stimulus');
-var ARROWS={left:'◀',right:'▶',up:'▲',down:'▼'};
+var ARROWS={left:'←',right:'→',up:'↑',down:'↓'};
 var DIRS=['left','right','up','down'];
 var trialSequence=[],trialSeqIdx=0;
 function buildTrialSequence(){

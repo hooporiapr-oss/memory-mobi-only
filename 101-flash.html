@@ -34,12 +34,21 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 }
 #stimulus.hit{box-shadow:0 0 60px rgba(0,229,255,1),0 0 110px rgba(0,229,255,.6)}
 
+/* Gold arrows — a real SVG shape with a metallic gradient and drop
+   shadow, rotated per direction rather than four separate flat glyphs.
+   One shape, one gradient, perfectly consistent across every direction. */
+.gold-arrow{width:46%;height:46%;filter:drop-shadow(0 3px 4px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(255,200,60,.55));transition:transform .06s}
+.choice-btn .gold-arrow{width:52%;height:52%}
+.dir-up{transform:rotate(0deg)}
+.dir-right{transform:rotate(90deg)}
+.dir-down{transform:rotate(180deg)}
+.dir-left{transform:rotate(270deg)}
+
 #choices{
   position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:20;
   display:grid;grid-template-columns:74px 74px 74px;grid-template-rows:64px 64px 64px;gap:8px;
 }
 .choice-btn{border:2px solid rgba(255,30,60,.4);background:rgba(255,30,60,.08);border-radius:14px;color:#fff;display:flex;align-items:center;justify-content:center;transition:all .08s}
-.choice-btn .arrow-glyph{font-size:1.7rem;line-height:1}
 .choice-btn:active{background:rgba(255,30,60,.35);transform:scale(.94)}
 #btnUp{grid-column:2;grid-row:1}
 #btnLeft{grid-column:1;grid-row:2}
@@ -91,6 +100,20 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </head>
 <body>
 
+<!-- Shared gold gradient — defined once, referenced by every arrow
+     instance so the metallic look is perfectly consistent. -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="goldGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#fff6d8"/>
+      <stop offset="30%" stop-color="#ffe27a"/>
+      <stop offset="55%" stop-color="#ffc72c"/>
+      <stop offset="80%" stop-color="#c9911a"/>
+      <stop offset="100%" stop-color="#8a5f0f"/>
+    </linearGradient>
+  </defs>
+</svg>
+
 <a id="backBtn" href="index.html">← Back</a>
 
 <div id="hud">
@@ -101,13 +124,13 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 
 <div id="msg" class="watch"></div>
 
-<div id="stageWrap"><div id="stimulus"></div></div>
+<div id="stageWrap"><div id="stimulus"><svg class="gold-arrow" id="stimArrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></div></div>
 
 <div id="choices">
-  <button class="choice-btn" id="btnUp"><span class="arrow-glyph">↑</span></button>
-  <button class="choice-btn" id="btnLeft"><span class="arrow-glyph">←</span></button>
-  <button class="choice-btn" id="btnRight"><span class="arrow-glyph">→</span></button>
-  <button class="choice-btn" id="btnDown"><span class="arrow-glyph">↓</span></button>
+  <button class="choice-btn" id="btnUp"><svg class="gold-arrow dir-up" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="btnLeft"><svg class="gold-arrow dir-left" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="btnRight"><svg class="gold-arrow dir-right" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="btnDown"><svg class="gold-arrow dir-down" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
 </div>
 
 <!-- INTRO -->
@@ -190,7 +213,8 @@ var idx=0,score=0,best=0,correctCount=0,misses=0;
 var currentSide=null,awaitingResponse=false,answeredThisBeat=false;
 var beatTimer=null;
 var stimulus=$('stimulus');
-var ARROWS={left:'←',right:'→',up:'↑',down:'↓'};
+var stimArrow=$('stimArrow');
+var DIR_DEG={left:270,right:90,up:0,down:180};
 var DIRS=['left','right','up','down'];
 
 function loadBest(){
@@ -295,7 +319,7 @@ function beatTick(){
   answeredThisBeat=false;
   awaitingResponse=true;
   currentSide=DIRS[Math.floor(Math.random()*DIRS.length)];
-  stimulus.textContent=ARROWS[currentSide];
+  stimArrow.style.transform='rotate('+DIR_DEG[currentSide]+'deg)';
   $('hLeft').textContent=Math.max(0,TOTAL-idx+1);
 }
 

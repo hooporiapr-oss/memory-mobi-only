@@ -30,8 +30,10 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   box-shadow:0 0 40px rgba(0,229,255,.85),0 0 80px rgba(0,229,255,.4);
   display:flex;align-items:center;justify-content:center;
   font-size:min(14vw,3.2rem);color:#fff;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.6);
-  transition:box-shadow .1s;
+  opacity:0;transform:scale(.6);
+  transition:box-shadow .1s,opacity .12s,transform .12s;
 }
+#stimulus.visible{opacity:1;transform:scale(1)}
 #stimulus.hit{box-shadow:0 0 60px rgba(0,229,255,1),0 0 110px rgba(0,229,255,.6)}
 
 /* Gold arrows — a real SVG shape with a metallic gradient and drop
@@ -215,6 +217,10 @@ var TIMEOUT_BPM=40; // safety net only — not the scoring pace. Guarantees
 // a real, generous window (1500ms) to respond before a round is
 // forced to move on, rather than waiting forever.
 var RESPONSE_TIMEOUT_MS=Math.round(60000/TIMEOUT_BPM);
+var FLASH_BPM=120; // how long the target actually stays visible before
+// going blank — a real flash-then-recall test, not just "react to
+// something you're already staring at."
+var FLASH_MS=Math.round(60000/FLASH_BPM);
 var MISS_PENALTY=50; // flat cost for a wrong tap OR a timeout — same
 // penalty either way, since both are a failure to respond correctly.
 var TOTAL=50;
@@ -229,7 +235,7 @@ var idx=0,score=0,best=0,correctCount=0,misses=0,totalRT=0,rtCount=0,shownAt=0;
 var totalPtsEarned=0,totalPenalty=0;
 var lastAvgBpm=0,beatPreviewPlaying=false;
 var currentSide=null,awaitingResponse=false;
-var roundTimer=null;
+var roundTimer=null,flashTimer=null;
 var stimulus=$('stimulus');
 var stimArrow=$('stimArrow');
 var DIR_DEG={left:270,right:90,up:0,down:180};
@@ -337,8 +343,20 @@ function nextTarget(){
   var pool=DIRS.filter(function(d){return d!==currentSide});
   currentSide=pool[Math.floor(Math.random()*pool.length)];
   stimArrow.style.transform='rotate('+DIR_DEG[currentSide]+'deg)';
+  stimulus.classList.add('visible');
   shownAt=performance.now();
   $('hLeft').textContent=Math.max(0,TOTAL-idx+1);
+
+  // A real flash, not a continuous stare — the target shows for one
+  // beat at 120 BPM, then goes blank while the response window stays
+  // fully open. Tapping is valid the whole time, both during the
+  // brief flash and through the blank period after — this tests
+  // reading-and-recalling under real time pressure, not just reacting
+  // to something already sitting in front of you.
+  clearTimeout(flashTimer);
+  flashTimer=setTimeout(function(){
+    stimulus.classList.remove('visible');
+  },FLASH_MS);
 
   clearTimeout(roundTimer);
   roundTimer=setTimeout(handleTimeout,RESPONSE_TIMEOUT_MS);
@@ -347,6 +365,7 @@ function nextTarget(){
 function handleTimeout(){
   if(phase!=='running'||!awaitingResponse)return;
   awaitingResponse=false;
+  clearTimeout(flashTimer);
   misses++;
   totalPenalty+=MISS_PENALTY;
   score=Math.max(0,score-MISS_PENALTY);
@@ -365,6 +384,8 @@ function handleChoice(side){
   if(phase!=='running'||!awaitingResponse)return;
   awaitingResponse=false;
   clearTimeout(roundTimer);
+  clearTimeout(flashTimer);
+  stimulus.classList.remove('visible');
 
   if(side===currentSide){
     var rt=performance.now()-shownAt;
@@ -399,7 +420,7 @@ $('btnRight').addEventListener('pointerdown',function(e){e.preventDefault();hand
 
 function endDrill(){
   if(phase==='done')return;
-  phase='done';clearTimeout(roundTimer);
+  phase='done';clearTimeout(roundTimer);clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
   // The live HUD score stays floored at 0 throughout play so it never
   // shows a negative number mid-game — but that same floor makes the

@@ -52,10 +52,10 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 }
 .choice-btn{border:2px solid rgba(255,30,60,.4);background:rgba(255,30,60,.08);border-radius:14px;color:#fff;display:flex;align-items:center;justify-content:center;transition:all .08s}
 .choice-btn:active{background:rgba(255,30,60,.35);transform:scale(.94)}
-#btnUp{grid-column:2;grid-row:1}
-#btnLeft{grid-column:1;grid-row:2}
-#btnRight{grid-column:3;grid-row:2}
-#btnDown{grid-column:2;grid-row:3}
+#slot0{grid-column:2;grid-row:1}
+#slot1{grid-column:1;grid-row:2}
+#slot2{grid-column:3;grid-row:2}
+#slot3{grid-column:2;grid-row:3}
 
 #backBtn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:14px;z-index:60;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.7rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;z-index:60}
 
@@ -136,10 +136,10 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <div id="stageWrap"><div id="stimulus"><svg class="gold-arrow" id="stimArrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></div></div>
 
 <div id="choices">
-  <button class="choice-btn" id="btnUp"><svg class="gold-arrow dir-up" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
-  <button class="choice-btn" id="btnLeft"><svg class="gold-arrow dir-left" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
-  <button class="choice-btn" id="btnRight"><svg class="gold-arrow dir-right" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
-  <button class="choice-btn" id="btnDown"><svg class="gold-arrow dir-down" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="slot0"><svg class="gold-arrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="slot1"><svg class="gold-arrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="slot2"><svg class="gold-arrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="slot3"><svg class="gold-arrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
 </div>
 
 <!-- INTRO -->
@@ -347,6 +347,7 @@ function nextTarget(){
   stimulus.classList.add('visible');
   shownAt=performance.now();
   $('hLeft').textContent=Math.max(0,TOTAL-idx+1);
+  shuffleButtonLayout();
 
   // A real flash, not a continuous stare — the target shows for one
   // beat at 120 BPM, then goes blank while the response window stays
@@ -361,6 +362,28 @@ function nextTarget(){
 
   clearTimeout(roundTimer);
   roundTimer=setTimeout(handleTimeout,RESPONSE_TIMEOUT_MS);
+}
+
+// Re-randomizes which direction lives in which of the four fixed
+// screen positions, every single round. The physical slots never
+// move — the cross stays a cross, thumb-reachable and predictable —
+// but which arrow is IN each slot changes every time, so there's no
+// "top button = up" muscle memory to fall back on. Reading both the
+// target and the buttons is required on every single tap.
+var SLOT_IDS=['slot0','slot1','slot2','slot3'];
+function shuffleButtonLayout(){
+  var shuffled=DIRS.slice();
+  for(var i=shuffled.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=shuffled[i];shuffled[i]=shuffled[j];shuffled[j]=tmp;
+  }
+  SLOT_IDS.forEach(function(slotId,i){
+    var dir=shuffled[i];
+    var btn=$(slotId);
+    btn.dataset.dir=dir;
+    var svg=btn.querySelector('svg');
+    svg.style.transform='rotate('+DIR_DEG[dir]+'deg)';
+  });
 }
 
 function handleTimeout(){
@@ -424,10 +447,16 @@ function handleChoice(side){
   nextTarget();
 }
 
-$('btnUp').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('up')});
-$('btnDown').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('down')});
-$('btnLeft').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('left')});
-$('btnRight').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('right')});
+// Each slot's own click handler reads whichever direction is CURRENTLY
+// assigned to it at the moment of the tap, rather than a fixed
+// direction baked into the button itself — since that assignment
+// changes every round.
+['slot0','slot1','slot2','slot3'].forEach(function(id){
+  $(id).addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    handleChoice(this.dataset.dir);
+  });
+});
 
 function endDrill(){
   if(phase==='done')return;

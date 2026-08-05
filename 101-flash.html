@@ -79,7 +79,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .final-num{font-family:'Bebas Neue',sans-serif;font-size:5rem;color:var(--red);line-height:1;text-shadow:0 0 50px rgba(255,30,60,.8)}
 .final-label{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:8px}
 .final-acc{margin-top:10px;font-size:1rem;color:#ff6b7f;font-weight:700}
-.final-avgms{margin-top:6px;font-size:1.3rem;font-weight:900;color:var(--cy)}
+.final-avgbpm{margin-top:10px;font-size:1.3rem;font-weight:900;color:var(--cy)}
 .hear-bpm-btn{margin-top:10px;height:44px;padding:0 22px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:14px;color:var(--cy);font-size:.8rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .hear-bpm-btn:active{background:rgba(0,229,255,.25);transform:scale(.97)}
 .hear-bpm-btn:disabled{opacity:.4;cursor:default}
@@ -132,7 +132,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <div id="hud">
   <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
   <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
-  <div class="hud-box"><div class="hud-label">Last</div><div class="hud-val" id="hLastMs">--</div></div>
+  <div class="hud-box"><div class="hud-label">BPM</div><div class="hud-val" id="hLastMs">--</div></div>
   <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
 </div>
 
@@ -151,7 +151,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <div id="screen-intro">
   <div class="vrr-logo">FLASH <span>REACTION</span></div>
   <div class="vrr-sub">Ritnome Memory · Reaction Speed</div>
-  <div class="rule-t"><b>50 targets.</b> The target flashes once, at 120 BPM, then goes blank — no new target appears until you respond, right or wrong, or 3 full seconds pass. Read it and tap the matching direction as fast as you can — the faster you react, the more points you score. A wrong tap or no response scores zero for that target. Three no-response targets in one game — spread out or in a row — ends the drill.</div>
+  <div class="rule-t"><b>50 targets.</b> The target flashes once, at 120 BPM, then goes blank — no new target appears until you respond, right or wrong, or 3 full seconds pass. Read it and tap the matching direction as fast as you can. Your score is your average BPM across all 50 targets — a wrong tap or no response counts as zero, so the only way to a high score is being both fast and accurate. Three no-response targets in one game — spread out or in a row — ends the drill.</div>
   <button class="big-btn" id="bigStart" onclick="startDrill()">START</button>
   <div class="best-line" id="bestLine"></div>
   <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
@@ -165,13 +165,12 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="box-section">
     <div class="box-section-label">Last Game</div>
     <table class="box-table">
-      <thead><tr><th>PTS</th><th>FG</th><th>FG%</th><th>MISS</th><th>MS</th></tr></thead>
+      <thead><tr><th>SCORE</th><th>FG</th><th>FG%</th><th>MISS</th></tr></thead>
       <tbody><tr>
         <td class="box-pts" id="boxLastPts">--</td>
         <td id="boxLastFg">--</td>
         <td id="boxLastFgPct">--</td>
         <td id="boxLastMiss">--</td>
-        <td id="boxLastMs">--</td>
       </tr></tbody>
     </table>
   </div>
@@ -179,14 +178,13 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="box-section">
     <div class="box-section-label">Career</div>
     <table class="box-table">
-      <thead><tr><th>GP</th><th>PPG</th><th>FG%</th><th>HIGH</th><th>MISS/G</th><th>AVG MS</th></tr></thead>
+      <thead><tr><th>GP</th><th>AVG SCORE</th><th>FG%</th><th>HIGH</th><th>MISS/G</th></tr></thead>
       <tbody><tr>
         <td id="boxGP">--</td>
         <td class="box-pts" id="boxPPG">--</td>
         <td id="boxCareerFgPct">--</td>
         <td id="boxHigh">--</td>
         <td id="boxCareerMiss">--</td>
-        <td id="boxCareerMs">--</td>
       </tr></tbody>
     </table>
   </div>
@@ -204,12 +202,11 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 
 <!-- END -->
 <div id="screen-end">
-  <div class="final-num" id="endNum">0</div>
-  <div class="final-label">Total Points</div>
-  <div class="final-avgms" id="endAvgMs"></div>
-  <button class="hear-bpm-btn" id="hearBpmBtn" style="display:none"><span class="beat-dot-ind" id="beatDotInd"></span> Hear Your Ritnome</button>
+  <div class="final-num" id="endNum">0/50</div>
+  <div class="final-label">Score (BPM)</div>
   <div class="final-acc" id="endAcc"></div>
   <div class="final-misses" id="endMisses"></div>
+  <button class="hear-bpm-btn" id="hearBpmBtn" style="display:none"><span class="beat-dot-ind" id="beatDotInd"></span> Hear Your Ritnome</button>
   <h2 id="endHead">Drill Complete!</h2>
   <div id="endSub">Great taps. Beat this number next time!</div>
   <button class="next-player-btn" id="nextPlayerBtn">Next Player</button>
@@ -237,8 +234,14 @@ function $(id){return document.getElementById(id)}
 function bpmFromMs(v){return v?Math.round(60000/v):0}
 
 var phase='idle';
-var idx=0,score=0,best=0,correctCount=0,misses=0,noResponseCount=0,totalRT=0,rtCount=0,shownAt=0;
-var totalPtsEarned=0;
+var idx=0,best=0,correctCount=0,misses=0,noResponseCount=0,totalRT=0,rtCount=0,shownAt=0;
+var totalBpmSum=0,roundsCompleted=0; // the whole scoring system: sum of
+// BPM for every correct tap, divided by every target attempted — a
+// wrong tap or no-response contributes zero to the sum but still
+// counts in the denominator, so the single resulting number can only
+// be high if you were BOTH fast and accurate. Being slow-but-perfect
+// caps your ceiling; being fast-but-careless tanks your average.
+// There's no way to game one dimension at the other's expense.
 var lastAvgBpm=0,beatPreviewPlaying=false;
 var currentSide=null,awaitingResponse=false;
 var roundTimer=null,flashTimer=null;
@@ -251,7 +254,7 @@ function loadBest(){
   best=0;
   try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
   $('hBest').textContent=best;
-  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' pts</b>'):'';
+  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' BPM</b>'):'';
 }
 function saveBest(){try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
 
@@ -260,15 +263,16 @@ function loadBoxData(){
     var raw=localStorage.getItem(BOX_KEY);
     if(raw)return JSON.parse(raw);
   }catch(e){}
-  return {gp:0,totalPts:0,totalMade:0,totalAttempts:0,totalMisses:0,totalMs:0,high:0,recent:[]};
+  return {gp:0,totalScore:0,totalMade:0,totalAttempts:0,totalMisses:0,high:0,recent:[]};
 }
 function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
-function recordGameToBoxScore(finalScore,made,attempts,missCount,avgMs){
+function recordGameToBoxScore(finalScore,made,attempts,missCount){
   var d=loadBoxData();
-  if(typeof d.totalMs!=='number')d.totalMs=0; // safe upgrade for any box score saved before this stat existed
-  d.gp++;d.totalPts+=finalScore;d.totalMade+=made;d.totalAttempts+=attempts;d.totalMisses+=missCount;d.totalMs+=avgMs;
+  // safe upgrade for any box score saved under the old points-based system
+  if(typeof d.totalScore!=='number')d.totalScore=(typeof d.totalPts==='number')?d.totalPts:0;
+  d.gp++;d.totalScore+=finalScore;d.totalMade+=made;d.totalAttempts+=attempts;d.totalMisses+=missCount;
   if(finalScore>d.high)d.high=finalScore;
-  d.recent.unshift({pts:finalScore,made:made,attempts:attempts,miss:missCount,ms:avgMs,date:new Date().toLocaleDateString()});
+  d.recent.unshift({score:finalScore,made:made,attempts:attempts,miss:missCount,date:new Date().toLocaleDateString()});
   if(d.recent.length>8)d.recent=d.recent.slice(0,8);
   saveBoxData(d);
   return d;
@@ -276,30 +280,28 @@ function recordGameToBoxScore(finalScore,made,attempts,missCount,avgMs){
 function pct(made,attempts){return attempts>0?Math.round((made/attempts)*100)+'%':'--'}
 function renderBoxScore(lastGame){
   var d=loadBoxData();
-  if(typeof d.totalMs!=='number')d.totalMs=0;
+  if(typeof d.totalScore!=='number')d.totalScore=(typeof d.totalPts==='number')?d.totalPts:0;
   var l=lastGame||(d.recent.length?d.recent[0]:null);
   if(l){
-    $('boxLastPts').textContent=l.pts;
+    $('boxLastPts').textContent=(typeof l.score==='number')?l.score:l.pts;
     $('boxLastFg').textContent=l.made+'-'+l.attempts;
     $('boxLastFgPct').textContent=pct(l.made,l.attempts);
     $('boxLastMiss').textContent=l.miss;
-    $('boxLastMs').textContent=(typeof l.ms==='number'&&l.ms>0)?(l.ms+'ms · '+bpmFromMs(l.ms)+'bpm'):'--';
   }else{
-    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMiss').textContent='--';$('boxLastMs').textContent='--';
+    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMiss').textContent='--';
   }
   $('boxGP').textContent=d.gp;
-  $('boxPPG').textContent=d.gp>0?(d.totalPts/d.gp).toFixed(1):'--';
+  $('boxPPG').textContent=d.gp>0?(d.totalScore/d.gp).toFixed(1):'--';
   $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
   $('boxHigh').textContent=d.high>0?d.high:'--';
   $('boxCareerMiss').textContent=d.gp>0?(d.totalMisses/d.gp).toFixed(1):'--';
-  $('boxCareerMs').textContent=d.gp>0?(function(){var m=Math.round(d.totalMs/d.gp);return m+'ms · '+bpmFromMs(m)+'bpm';})():'--';
   var listEl=$('boxRecentList');
   if(!d.recent.length){
     listEl.innerHTML='<div class="box-empty">No games yet — play a round to start your box score.</div>';
   }else{
     listEl.innerHTML=d.recent.map(function(g){
-      var msText=(typeof g.ms==='number'&&g.ms>0)?(' · '+g.ms+'ms/'+bpmFromMs(g.ms)+'bpm'):'';
-      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+msText+'</span></div>';
+      var s=(typeof g.score==='number')?g.score:g.pts;
+      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+s+' BPM</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+'</span></div>';
     }).join('');
   }
 }
@@ -323,7 +325,7 @@ function startDrill(){
 }
 
 function runDrill(){
-  phase='running';idx=0;score=0;correctCount=0;misses=0;noResponseCount=0;totalRT=0;rtCount=0;totalPtsEarned=0;
+  phase='running';idx=0;correctCount=0;misses=0;noResponseCount=0;totalRT=0;rtCount=0;totalBpmSum=0;roundsCompleted=0;
   $('hScore').textContent='0';$('hLeft').textContent=TOTAL;$('hLastMs').textContent='--';
   stimulus.classList.add('visible');
   nextTarget();
@@ -396,16 +398,17 @@ function handleTimeout(){
   awaitingResponse=false;
   clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
-  // No response at all scores a flat zero — not the speed formula, not
-  // a penalty, just nothing earned for that target. Three of these
-  // across the game — whether spread out or three in a row — ends the
-  // drill immediately rather than letting it run on with someone who
-  // has genuinely stopped engaging.
+  // No response contributes zero to the running average — it still
+  // counts as a target attempted, just with nothing earned for it.
+  // Three of these across the game — whether spread out or three in a
+  // row — ends the drill immediately rather than letting it run on
+  // with someone who has genuinely stopped engaging.
   noResponseCount++;
+  roundsCompleted++;
   $('hLastMs').textContent='No response';
   flashWrong();
   msg('✗ NO RESPONSE (0)','wrong');
-  $('hScore').textContent=score;
+  updateLiveScore();
 
   if(noResponseCount>=MAX_NO_RESPONSE){
     endDrill();
@@ -419,36 +422,44 @@ function flashWrong(){
   setTimeout(function(){stimulus.classList.remove('hit')},100);
 }
 
+// The live "Score" is the running average BPM across every target
+// attempted so far — correct taps contribute their real speed, a
+// wrong tap or no-response contributes zero, and the denominator is
+// every round resolved either way. This is the exact same formula
+// the end screen shows, just recalculated live as it goes, so the
+// number in the HUD during play IS the real score, not a preview of it.
+function updateLiveScore(){
+  var avg=roundsCompleted?Math.round(totalBpmSum/roundsCompleted):0;
+  $('hScore').textContent=avg;
+}
+
 function handleChoice(side){
   if(phase!=='running'||!awaitingResponse)return;
   awaitingResponse=false;
   clearTimeout(roundTimer);
   clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
+  roundsCompleted++;
 
   if(side===currentSide){
     var rt=performance.now()-shownAt;
-    // Speed-based scoring — faster reactions score more. A near-instant
-    // tap scores close to the 300-point ceiling; anything past about
-    // 1.2 seconds still earns the 1-point floor rather than nothing.
-    var pts=Math.max(1,Math.round(300-rt/4));
+    var bpm=bpmFromMs(rt);
     correctCount++;
-    totalPtsEarned+=pts;
-    score+=pts;
+    totalBpmSum+=bpm;
     totalRT+=rt;rtCount++;
-    $('hLastMs').textContent=Math.round(rt)+'ms · '+bpmFromMs(rt)+' BPM';
+    $('hLastMs').textContent=bpm;
     stimulus.classList.add('hit');
     setTimeout(function(){stimulus.classList.remove('hit')},100);
-    msg('✓ +'+pts+'! ('+Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM)','correct');
+    msg('✓ '+bpm+' BPM','correct');
   }else{
-    // A wrong direction scores exactly the same as no response —
-    // a flat zero. The only thing that changes your score is how fast
-    // you got it right; anything else is worth nothing, consistently.
+    // A wrong direction contributes zero to the average, exactly like
+    // no response — the only thing that ever raises your score is
+    // answering correctly, and answering fast when you do.
     misses++;
     flashWrong();
     msg('✗ WRONG! (0)','wrong');
   }
-  $('hScore').textContent=score;
+  updateLiveScore();
   nextTarget();
 }
 
@@ -467,42 +478,40 @@ function endDrill(){
   if(phase==='done')return;
   phase='done';clearTimeout(roundTimer);clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
-  // The live HUD score updates continuously during play, but the
-  // final number here is recalculated directly from the true total of
-  // every point actually earned — a single accumulator that only ever
-  // goes up, since every outcome (correct, wrong, or no response) now
-  // scores through the same formula rather than some outcomes adding
-  // and others subtracting. That also means the result is naturally
-  // order-independent — there's no floor-at-zero edge case left to
-  // worry about, because nothing was ever capable of going negative.
-  var finalScore=totalPtsEarned;
+  // The single score: total BPM earned across every correct tap,
+  // divided by every target attempted — not just the correct ones. A
+  // wrong tap or no-response pulls this down by contributing zero to
+  // the sum while still counting in the denominator, so the only way
+  // to post a high number is being both fast AND accurate. This is
+  // naturally order-independent too, since it's the true accumulated
+  // sum divided by the true total, not a running value that could
+  // have been affected by which order things happened in.
+  var finalScore=roundsCompleted?Math.round(totalBpmSum/roundsCompleted):0;
   var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
-  var avgRT=rtCount?Math.round(totalRT/rtCount):0;
   var completed=(idx>=TOTAL);
   var endedEarly=(noResponseCount>=MAX_NO_RESPONSE&&!completed);
-  var isNewPts=completed&&finalScore>best;
-  if(isNewPts){best=finalScore;saveBest()}
+  var isNewBest=completed&&finalScore>best;
+  if(isNewBest){best=finalScore;saveBest()}
 
   $('endNum').textContent=finalScore;
-  $('endAvgMs').textContent=avgRT>0?('Avg '+avgRT+' MS · '+bpmFromMs(avgRT)+' BPM'):'';
-  lastAvgBpm=avgRT>0?bpmFromMs(avgRT):0;
-  $('hearBpmBtn').style.display=lastAvgBpm>0?'inline-flex':'none';
-  $('endAcc').textContent=(completed?TOTAL:idx)+'/'+TOTAL+' targets · '+correctCount+' correct · '+accPct+'% accuracy';
+  $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
   $('endMisses').textContent=misses+' WRONG · '+noResponseCount+' NO RESPONSE';
   $('endMisses').className='final-misses'+((misses===0&&noResponseCount===0)?' clean':'');
+  lastAvgBpm=finalScore;
+  $('hearBpmBtn').style.display=finalScore>0?'inline-flex':'none';
 
   if(endedEarly){
     $('endHead').textContent='Drill Ended Early';
     $('endSub').textContent='Three no-response targets ends the drill — only a completed 50-target run posts to your Box Score. Give it another go!';
-  }else if(isNewPts&&finalScore>0){
-    $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points!';
+  }else if(isNewBest&&finalScore>0){
+    $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' BPM!';
   }else{
     $('endHead').textContent='Drill Complete!';$('endSub').textContent='Great taps. Beat this number next time!';
   }
 
   if(completed){
-    window.__lastGameBox={pts:finalScore,made:correctCount,attempts:TOTAL,miss:misses,ms:avgRT,date:new Date().toLocaleDateString()};
-    recordGameToBoxScore(finalScore,correctCount,TOTAL,misses,avgRT);
+    window.__lastGameBox={score:finalScore,made:correctCount,attempts:TOTAL,miss:misses,date:new Date().toLocaleDateString()};
+    recordGameToBoxScore(finalScore,correctCount,TOTAL,misses);
   }
 
   $('screen-end').style.display='flex';

@@ -45,8 +45,8 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 /* Same chip strip, reused read-only on the end screen and Box Score —
    smaller, wraps instead of scrolling, since there's no live game
    happening there to auto-follow. */
-.scoreboard-static{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:340px;margin:14px auto}
-.scoreboard-static .shot-chip{width:22px;height:22px;font-size:.72rem;border-radius:6px}
+.scoreboard-static{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:320px;margin:10px auto}
+.scoreboard-static .shot-chip{width:19px;height:19px;font-size:.62rem;border-radius:5px}
 #msg.watch{color:var(--red)}#msg.correct{color:#00D9A5}#msg.wrong{color:var(--red)}
 
 /* Stagnant, centered target — never moves. Only the arrow it carries
@@ -97,23 +97,26 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .big-btn{width:100%;max-width:340px;height:60px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(255,30,60,.6)}
 .best-line{margin-top:16px;font-size:.8rem;color:var(--muted)}
 .best-line b{color:var(--red)}
-.box-open-btn{width:100%;max-width:320px;height:48px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:14px;color:var(--cy);font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:18px}
+.box-open-btn{width:100%;max-width:320px;height:44px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:14px;color:var(--cy);font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:12px}
 
-#screen-end{position:fixed;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--dark);text-align:center;padding:24px}
-.final-num{font-family:'Bebas Neue',sans-serif;font-size:5rem;color:var(--red);line-height:1;text-shadow:0 0 50px rgba(255,30,60,.8)}
-.final-label{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:8px}
-.final-acc{margin-top:10px;font-size:1rem;color:#ff6b7f;font-weight:700}
+#screen-end{position:fixed;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--dark);text-align:center;padding:18px 20px;overflow-y:auto}
+.completion-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.completion-badge.complete{background:rgba(0,217,165,.14);border:1px solid rgba(0,217,165,.4);color:#00d9a5}
+.completion-badge.incomplete{background:rgba(255,180,80,.14);border:1px solid rgba(255,180,80,.4);color:#ffb450}
+.final-num{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--red);line-height:1;text-shadow:0 0 50px rgba(255,30,60,.8)}
+.final-label{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.final-acc{margin-top:8px;font-size:.95rem;color:#ff6b7f;font-weight:700}
 .final-avgbpm{margin-top:10px;font-size:1.3rem;font-weight:900;color:var(--cy)}
-.hear-bpm-btn{margin-top:10px;height:44px;padding:0 22px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:14px;color:var(--cy);font-size:.8rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.hear-bpm-btn{margin-top:8px;height:40px;padding:0 20px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:12px;color:var(--cy);font-size:.76rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .hear-bpm-btn:active{background:rgba(0,229,255,.25);transform:scale(.97)}
 .hear-bpm-btn:disabled{opacity:.4;cursor:default}
 .hear-bpm-btn .beat-dot-ind{width:8px;height:8px;border-radius:50%;background:var(--cy);transition:transform .08s,opacity .08s}
 .hear-bpm-btn .beat-dot-ind.pulse{transform:scale(1.8);opacity:.4}
-.final-misses{margin-top:10px;font-size:1.1rem;font-weight:900;color:var(--red)}
+.final-misses{margin-top:6px;font-size:1rem;font-weight:900;color:var(--red)}
 .final-misses.clean{color:#00D9A5}
-#screen-end h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:1px;margin:20px 0 6px}
-#endSub{font-size:.85rem;color:var(--muted);line-height:1.5;max-width:340px}
-.next-player-btn{margin-top:22px;height:56px;padding:0 34px;border:none;border-radius:16px;background:linear-gradient(120deg,var(--red),var(--red-deep));color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer}
+#screen-end h2{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px;margin:12px 0 5px}
+#endSub{font-size:.8rem;color:var(--muted);line-height:1.4;max-width:320px}
+.next-player-btn{margin-top:14px;height:50px;padding:0 34px;border:none;border-radius:14px;background:linear-gradient(120deg,var(--red),var(--red-deep));color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer}
 
 #screen-box{position:fixed;inset:0;z-index:58;display:none;flex-direction:column;align-items:center;background:var(--dark);padding:calc(60px + env(safe-area-inset-top)) 16px 24px;overflow-y:auto}
 .box-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;text-transform:uppercase;color:#fff}
@@ -228,8 +231,9 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 
 <!-- END -->
 <div id="screen-end">
-  <div class="final-num" id="endNum">0/50</div>
-  <div class="final-label">Score (BPM)</div>
+  <div class="completion-badge" id="endCompletion">50/50 TARGETS</div>
+  <div class="final-num" id="endNum">0</div>
+  <div class="final-label">Score</div>
   <div class="final-acc" id="endAcc"></div>
   <div class="final-misses" id="endMisses"></div>
   <div class="scoreboard-static" id="endScoreboard"></div>
@@ -238,7 +242,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div id="endSub">Great taps. Beat this number next time!</div>
   <button class="next-player-btn" id="nextPlayerBtn">Next Player</button>
   <button class="box-open-btn" id="openBoxBtnEnd">📊 BOX SCORE</button>
-  <a id="endBackBtn" href="mobile-lab.html" style="margin-top:20px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
+  <a id="endBackBtn" href="mobile-lab.html" style="margin-top:14px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
 </div>
 
 <script>
@@ -545,6 +549,9 @@ function endDrill(){
   if(isNewBest){best=finalScore;saveBest()}
 
   $('endNum').textContent=finalScore;
+  var targetsShown=completed?TOTAL:idx;
+  $('endCompletion').textContent=targetsShown+'/'+TOTAL+' TARGETS'+(completed?' · COMPLETE':'');
+  $('endCompletion').className='completion-badge '+(completed?'complete':'incomplete');
   $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
   $('endMisses').textContent=misses+' WRONG · '+noResponseCount+' NO RESPONSE';
   $('endMisses').className='final-misses'+((misses===0&&noResponseCount===0)?' clean':'');

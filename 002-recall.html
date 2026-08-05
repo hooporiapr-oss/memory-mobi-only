@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+if (localStorage.getItem('rct-mobile-pass') !== '1') {
+  window.location.replace('index.html');
+}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>THE RECALL | Ritnome</title>
@@ -167,7 +172,7 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
 <body>
 <nav class="mini-nav">
 <div class="nav-row">
-<a href="index.html" class="back-btn" id="backBtn">← Back</a>
+<a href="mobile-lab.html" class="back-btn" id="backBtn">← Back</a>
 <div class="nav-title">THE RECALL</div>
 <div class="nav-right">
 <div class="nav-lang">

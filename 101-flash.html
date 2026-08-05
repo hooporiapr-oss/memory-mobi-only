@@ -213,16 +213,15 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </div>
 
 <script>
-var TIMEOUT_BPM=40; // safety net only — not the scoring pace. Guarantees
-// a real, generous window (1500ms) to respond before a round is
-// forced to move on, rather than waiting forever.
+var TIMEOUT_BPM=30; // the only condition under which a new target ever
+// appears without a response — a genuine 2000ms window, not a fast
+// auto-advance. No new flash happens until either a real response
+// (right or wrong) or this full window has elapsed.
 var RESPONSE_TIMEOUT_MS=Math.round(60000/TIMEOUT_BPM);
 var FLASH_BPM=120; // how long the target actually stays visible before
 // going blank — a real flash-then-recall test, not just "react to
 // something you're already staring at."
 var FLASH_MS=Math.round(60000/FLASH_BPM);
-var MISS_PENALTY=50; // flat cost for a wrong tap OR a timeout — same
-// penalty either way, since both are a failure to respond correctly.
 var TOTAL=50;
 var BEST_KEY='rct-101flash-best';
 var BOX_KEY='rct-101flash-boxscore';
@@ -231,8 +230,8 @@ function $(id){return document.getElementById(id)}
 function bpmFromMs(v){return v?Math.round(60000/v):0}
 
 var phase='idle';
-var idx=0,score=0,best=0,correctCount=0,misses=0,totalRT=0,rtCount=0,shownAt=0;
-var totalPtsEarned=0,totalPenalty=0;
+var idx=0,score=0,best=0,correctCount=0,misses=0,noResponseCount=0,totalRT=0,rtCount=0,shownAt=0;
+var totalPtsEarned=0;
 var lastAvgBpm=0,beatPreviewPlaying=false;
 var currentSide=null,awaitingResponse=false;
 var roundTimer=null,flashTimer=null;
@@ -317,7 +316,7 @@ function startDrill(){
 }
 
 function runDrill(){
-  phase='running';idx=0;score=0;correctCount=0;misses=0;totalRT=0;rtCount=0;totalPtsEarned=0;totalPenalty=0;
+  phase='running';idx=0;score=0;correctCount=0;misses=0;noResponseCount=0;totalRT=0;rtCount=0;totalPtsEarned=0;
   $('hScore').textContent='0';$('hLeft').textContent=TOTAL;$('hLastMs').textContent='--';
   stimulus.classList.add('visible');
   nextTarget();
@@ -366,11 +365,21 @@ function handleTimeout(){
   if(phase!=='running'||!awaitingResponse)return;
   awaitingResponse=false;
   clearTimeout(flashTimer);
-  misses++;
-  totalPenalty+=MISS_PENALTY;
-  score=Math.max(0,score-MISS_PENALTY);
+  stimulus.classList.remove('visible');
+  // No response at all is scored exactly like any other tap would be —
+  // through the same speed formula — just evaluated at the full
+  // RESPONSE_TIMEOUT_MS (the 30 BPM threshold) rather than a real
+  // measured RT. At that value the formula naturally lands on its
+  // 1-point floor, so this isn't a punitive penalty on top of a miss —
+  // it's simply the worst-case result the formula already produces for
+  // an extremely slow response, applied consistently to no response.
+  noResponseCount++;
+  var pts=Math.max(1,Math.round(300-RESPONSE_TIMEOUT_MS/4));
+  totalPtsEarned+=pts;
+  score+=pts;
+  $('hLastMs').textContent=RESPONSE_TIMEOUT_MS+'ms+ · '+TIMEOUT_BPM+' BPM';
   flashWrong();
-  msg('✗ TOO SLOW! (-'+MISS_PENALTY+')','wrong');
+  msg('✗ NO RESPONSE (+'+pts+')','wrong');
   $('hScore').textContent=score;
   nextTarget();
 }
@@ -391,8 +400,7 @@ function handleChoice(side){
     var rt=performance.now()-shownAt;
     // Speed-based scoring — faster reactions score more. A near-instant
     // tap scores close to the 300-point ceiling; anything past about
-    // 1.2 seconds still earns the 1-point floor rather than nothing,
-    // so a correct-but-slow tap is never worse than a genuine miss.
+    // 1.2 seconds still earns the 1-point floor rather than nothing.
     var pts=Math.max(1,Math.round(300-rt/4));
     correctCount++;
     totalPtsEarned+=pts;
@@ -403,11 +411,17 @@ function handleChoice(side){
     setTimeout(function(){stimulus.classList.remove('hit')},100);
     msg('✓ +'+pts+'! ('+Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM)','correct');
   }else{
+    // A wrong direction gets the same consistent treatment as no
+    // response at all — scored through the identical formula at the
+    // 30 BPM threshold rather than a separate penalty rule. One
+    // formula, applied the same way everywhere: the only thing that
+    // changes your score is how fast (or whether) you got it right.
     misses++;
-    totalPenalty+=MISS_PENALTY;
-    score=Math.max(0,score-MISS_PENALTY);
+    var wrongPts=Math.max(1,Math.round(300-RESPONSE_TIMEOUT_MS/4));
+    totalPtsEarned+=wrongPts;
+    score+=wrongPts;
     flashWrong();
-    msg('✗ WRONG! (-'+MISS_PENALTY+')','wrong');
+    msg('✗ WRONG! (+'+wrongPts+')','wrong');
   }
   $('hScore').textContent=score;
   nextTarget();
@@ -422,21 +436,15 @@ function endDrill(){
   if(phase==='done')return;
   phase='done';clearTimeout(roundTimer);clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
-  // The live HUD score stays floored at 0 throughout play so it never
-  // shows a negative number mid-game — but that same floor makes the
-  // running total order-dependent (misses early in a session "cost"
-  // less than misses late, once a buffer of points exists). The final
-  // score people actually judge the game by needs to be a simple,
-  // order-independent read of the real result, so it's recalculated
-  // directly from the final counts here rather than carried over from
-  // the accumulated running total.
-  // Same order-independence principle as before, but adapted for
-  // variable speed-based points: the final score is the true sum of
-  // every point actually earned minus every real penalty, tracked in
-  // accumulators that are never floored mid-game — not derived from
-  // the live HUD score, which stays floored at 0 for display and would
-  // otherwise make the result depend on which order things happened in.
-  var finalScore=Math.max(0,totalPtsEarned-totalPenalty);
+  // The live HUD score updates continuously during play, but the
+  // final number here is recalculated directly from the true total of
+  // every point actually earned — a single accumulator that only ever
+  // goes up, since every outcome (correct, wrong, or no response) now
+  // scores through the same formula rather than some outcomes adding
+  // and others subtracting. That also means the result is naturally
+  // order-independent — there's no floor-at-zero edge case left to
+  // worry about, because nothing was ever capable of going negative.
+  var finalScore=totalPtsEarned;
   var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
   var avgRT=rtCount?Math.round(totalRT/rtCount):0;
   var isNewPts=finalScore>best;
@@ -447,8 +455,8 @@ function endDrill(){
   lastAvgBpm=avgRT>0?bpmFromMs(avgRT):0;
   $('hearBpmBtn').style.display=lastAvgBpm>0?'inline-flex':'none';
   $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
-  $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES')+(misses>0?' (-'+totalPenalty+' PTS)':'');
-  $('endMisses').className='final-misses'+(misses===0?' clean':'');
+  $('endMisses').textContent=misses+' WRONG · '+noResponseCount+' NO RESPONSE';
+  $('endMisses').className='final-misses'+((misses===0&&noResponseCount===0)?' clean':'');
 
   if(isNewPts&&finalScore>0){
     $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points!';

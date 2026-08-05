@@ -107,6 +107,8 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .final-label{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:4px}
 .final-acc{margin-top:8px;font-size:.95rem;color:#ff6b7f;font-weight:700}
 .final-avgbpm{margin-top:10px;font-size:1.3rem;font-weight:900;color:var(--cy)}
+.bpm-avg-label{margin-top:10px;font-size:.78rem;color:var(--cy);font-weight:700}
+.bpm-avg-label b{font-weight:900}
 .hear-bpm-btn{margin-top:8px;height:40px;padding:0 20px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:12px;color:var(--cy);font-size:.76rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .hear-bpm-btn:active{background:rgba(0,229,255,.25);transform:scale(.97)}
 .hear-bpm-btn:disabled{opacity:.4;cursor:default}
@@ -128,11 +130,15 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .box-table th{background:rgba(255,30,60,.16);color:#ff6b7f;font-size:.56rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:7px 4px;text-align:center}
 .box-table td{padding:10px 4px;text-align:center;font-weight:900;font-size:1rem;color:#fff}
 .box-table .box-pts{color:var(--red);font-size:1.25rem}
+.box-table th.col-0,.box-table td.box-zero{color:#ff6b7f}
+.box-table th.col-2,.box-table td.box-two{color:var(--cy)}
+.box-table th.col-3,.box-table td.box-three{color:#ffb400}
+.box-table td.box-zero,.box-table td.box-two,.box-table td.box-three{font-weight:900;font-size:1.05rem}
 .box-empty{color:var(--muted);font-size:.8rem;padding:20px 8px;font-style:italic}
 .box-back-btn{width:100%;max-width:360px;height:50px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font-size:.9rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:4px}
-.box-recent-row{font-size:.7rem;color:var(--muted);padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between}
-.box-recent-row:last-child{border-bottom:none}
-.box-recent-row b{color:#ff6b7f}
+.recent-row td{font-size:.78rem;padding:8px 4px}
+.recent-row td.recent-date{color:var(--muted);text-align:left;font-size:.68rem}
+.recent-row td.recent-score{color:var(--red);font-weight:900}
 
 #countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:var(--dark)}
 #bigCount{font-family:'Bebas Neue',sans-serif;font-size:7rem;color:var(--red);text-shadow:0 0 50px rgba(255,30,60,.8)}
@@ -193,12 +199,12 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="box-section">
     <div class="box-section-label">Last Game</div>
     <table class="box-table">
-      <thead><tr><th>SCORE</th><th>FG</th><th>FG%</th><th>MISS</th></tr></thead>
+      <thead><tr><th class="col-0">0</th><th class="col-2">2</th><th class="col-3">3</th><th>SCORE</th></tr></thead>
       <tbody><tr>
+        <td class="box-zero" id="boxLastZero">--</td>
+        <td class="box-two" id="boxLastTwo">--</td>
+        <td class="box-three" id="boxLastThree">--</td>
         <td class="box-pts" id="boxLastPts">--</td>
-        <td id="boxLastFg">--</td>
-        <td id="boxLastFgPct">--</td>
-        <td id="boxLastMiss">--</td>
       </tr></tbody>
     </table>
     <div class="scoreboard-static" id="boxLastScoreboard"></div>
@@ -207,20 +213,21 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="box-section">
     <div class="box-section-label">Career</div>
     <table class="box-table">
-      <thead><tr><th>GP</th><th>AVG SCORE</th><th>FG%</th><th>HIGH</th><th>MISS/G</th></tr></thead>
+      <thead><tr><th>GP</th><th>AVG SCORE</th><th>HIGH</th></tr></thead>
       <tbody><tr>
         <td id="boxGP">--</td>
         <td class="box-pts" id="boxPPG">--</td>
-        <td id="boxCareerFgPct">--</td>
         <td id="boxHigh">--</td>
-        <td id="boxCareerMiss">--</td>
       </tr></tbody>
     </table>
   </div>
 
   <div class="box-section">
     <div class="box-section-label">Recent Games</div>
-    <div class="box-table" id="boxRecentList" style="border-radius:12px"></div>
+    <table class="box-table">
+      <thead><tr><th>DATE</th><th class="col-0">0</th><th class="col-2">2</th><th class="col-3">3</th><th>SCORE</th></tr></thead>
+      <tbody id="boxRecentList"></tbody>
+    </table>
   </div>
 
   <button class="box-back-btn" id="closeBoxBtn">← Back</button>
@@ -237,6 +244,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="final-acc" id="endAcc"></div>
   <div class="final-misses" id="endMisses"></div>
   <div class="scoreboard-static" id="endScoreboard"></div>
+  <div class="bpm-avg-label" id="bpmAvgLabel" style="display:none"></div>
   <button class="hear-bpm-btn" id="hearBpmBtn" style="display:none"><span class="beat-dot-ind" id="beatDotInd"></span> Hear Your Ritnome</button>
   <h2 id="endHead">Drill Complete!</h2>
   <div id="endSub">Great taps. Beat this number next time!</div>
@@ -299,47 +307,49 @@ function loadBoxData(){
     var raw=localStorage.getItem(BOX_KEY);
     if(raw)return JSON.parse(raw);
   }catch(e){}
-  return {gp:0,totalScore:0,totalMade:0,totalAttempts:0,totalMisses:0,high:0,recent:[]};
+  return {gp:0,totalScore:0,high:0,recent:[]};
 }
 function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
-function recordGameToBoxScore(finalScore,made,attempts,missCount,threesCount,shots){
+function recordGameToBoxScore(finalScore,zeroCount,twoCount,threeCount,shots){
   var d=loadBoxData();
-  // safe upgrade for any box score saved under the old points-based system
+  // safe upgrade for any box score saved under an earlier version of this system
   if(typeof d.totalScore!=='number')d.totalScore=(typeof d.totalPts==='number')?d.totalPts:0;
-  d.gp++;d.totalScore+=finalScore;d.totalMade+=made;d.totalAttempts+=attempts;d.totalMisses+=missCount;
+  d.gp++;d.totalScore+=finalScore;
   if(finalScore>d.high)d.high=finalScore;
-  d.recent.unshift({score:finalScore,made:made,attempts:attempts,miss:missCount,threes:threesCount,shots:shots,date:new Date().toLocaleDateString()});
+  d.recent.unshift({score:finalScore,zero:zeroCount,two:twoCount,three:threeCount,shots:shots,date:new Date().toLocaleDateString()});
   if(d.recent.length>8)d.recent=d.recent.slice(0,8);
   saveBoxData(d);
   return d;
 }
-function pct(made,attempts){return attempts>0?Math.round((made/attempts)*100)+'%':'--'}
 function renderBoxScore(lastGame){
   var d=loadBoxData();
   if(typeof d.totalScore!=='number')d.totalScore=(typeof d.totalPts==='number')?d.totalPts:0;
   var l=lastGame||(d.recent.length?d.recent[0]:null);
   if(l){
-    $('boxLastPts').textContent=(typeof l.score==='number')?l.score:l.pts;
-    $('boxLastFg').textContent=l.made+'-'+l.attempts;
-    $('boxLastFgPct').textContent=pct(l.made,l.attempts);
-    $('boxLastMiss').textContent=l.miss;
+    $('boxLastZero').textContent=l.zero;
+    $('boxLastTwo').textContent=l.two;
+    $('boxLastThree').textContent=l.three;
+    $('boxLastPts').textContent=l.score;
     renderScoreboard($('boxLastScoreboard'),l.shots||[]);
   }else{
-    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMiss').textContent='--';
+    $('boxLastZero').textContent='--';$('boxLastTwo').textContent='--';$('boxLastThree').textContent='--';$('boxLastPts').textContent='--';
     renderScoreboard($('boxLastScoreboard'),[]);
   }
   $('boxGP').textContent=d.gp;
   $('boxPPG').textContent=d.gp>0?(d.totalScore/d.gp).toFixed(1):'--';
-  $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
   $('boxHigh').textContent=d.high>0?d.high:'--';
-  $('boxCareerMiss').textContent=d.gp>0?(d.totalMisses/d.gp).toFixed(1):'--';
   var listEl=$('boxRecentList');
   if(!d.recent.length){
-    listEl.innerHTML='<div class="box-empty">No games yet — play a round to start your box score.</div>';
+    listEl.innerHTML='<tr><td colspan="5" class="box-empty">No games yet — play a round to start your box score.</td></tr>';
   }else{
     listEl.innerHTML=d.recent.map(function(g){
-      var s=(typeof g.score==='number')?g.score:g.pts;
-      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+s+' PTS</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+'</span></div>';
+      return '<tr class="recent-row">'
+        +'<td class="recent-date">'+g.date+'</td>'
+        +'<td class="box-zero">'+g.zero+'</td>'
+        +'<td class="box-two">'+g.two+'</td>'
+        +'<td class="box-three">'+g.three+'</td>'
+        +'<td class="recent-score">'+g.score+'</td>'
+        +'</tr>';
     }).join('');
   }
 }
@@ -557,6 +567,8 @@ function endDrill(){
   $('endMisses').className='final-misses'+((misses===0&&noResponseCount===0)?' clean':'');
   lastAvgBpm=avgRT>0?bpmFromMs(avgRT):0;
   $('hearBpmBtn').style.display=lastAvgBpm>0?'inline-flex':'none';
+  $('bpmAvgLabel').innerHTML=lastAvgBpm>0?('Your Ritnome BPM Average: <b>'+lastAvgBpm+' BPM</b>'):'';
+  $('bpmAvgLabel').style.display=lastAvgBpm>0?'block':'none';
 
   if(endedEarly){
     $('endHead').textContent='Drill Ended Early';
@@ -568,8 +580,10 @@ function endDrill(){
   }
 
   if(completed){
-    window.__lastGameBox={score:finalScore,made:correctCount,attempts:TOTAL,miss:misses,threes:threes,shots:shotLog.slice(),date:new Date().toLocaleDateString()};
-    recordGameToBoxScore(finalScore,correctCount,TOTAL,misses,threes,shotLog);
+    var zeros=misses+noResponseCount;
+    var twos=correctCount-threes;
+    window.__lastGameBox={score:finalScore,zero:zeros,two:twos,three:threes,shots:shotLog.slice(),date:new Date().toLocaleDateString()};
+    recordGameToBoxScore(finalScore,zeros,twos,threes,shotLog);
   }
 
   $('screen-end').style.display='flex';

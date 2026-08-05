@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+if (localStorage.getItem('rct-mobile-pass') !== '1') {
+  window.location.replace('index.html');
+}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Flash Reaction | Ritnome Memory</title>
@@ -122,7 +127,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   </defs>
 </svg>
 
-<a id="backBtn" href="index.html">← Back</a>
+<a id="backBtn" href="mobile-lab.html">← Back</a>
 
 <div id="hud">
   <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
@@ -209,7 +214,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div id="endSub">Great taps. Beat this number next time!</div>
   <button class="next-player-btn" id="nextPlayerBtn">Next Player</button>
   <button class="box-open-btn" id="openBoxBtnEnd">📊 BOX SCORE</button>
-  <a id="endBackBtn" href="index.html" style="margin-top:20px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
+  <a id="endBackBtn" href="mobile-lab.html" style="margin-top:20px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
 </div>
 
 <script>

@@ -146,7 +146,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <div id="screen-intro">
   <div class="vrr-logo">FLASH <span>REACTION</span></div>
   <div class="vrr-sub">Ritnome Memory · Reaction Speed</div>
-  <div class="rule-t"><b>50 targets.</b> The target stays put — only the arrow it's carrying changes. Read it and tap the matching direction as fast as you can — the faster you react, the more points you score. Take too long (at least 40 BPM, so you always have a real window) or tap the wrong way, and it costs you.</div>
+  <div class="rule-t"><b>50 targets.</b> The target flashes once, at 120 BPM, then goes blank — no new target appears until you respond, right or wrong, or 3 full seconds pass. Read it and tap the matching direction as fast as you can — the faster you react, the more points you score. A wrong tap or no response scores zero for that target. Three no-response targets in one game — spread out or in a row — ends the drill.</div>
   <button class="big-btn" id="bigStart" onclick="startDrill()">START</button>
   <div class="best-line" id="bestLine"></div>
   <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
@@ -213,16 +213,18 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </div>
 
 <script>
-var TIMEOUT_BPM=30; // the only condition under which a new target ever
-// appears without a response — a genuine 2000ms window, not a fast
-// auto-advance. No new flash happens until either a real response
-// (right or wrong) or this full window has elapsed.
-var RESPONSE_TIMEOUT_MS=Math.round(60000/TIMEOUT_BPM);
+var RESPONSE_TIMEOUT_MS=3000; // the only condition under which a new
+// target ever appears without a response — a genuine 3-second window.
+// No new flash happens until either a real response (right or wrong)
+// or this full window has elapsed.
 var FLASH_BPM=120; // how long the target actually stays visible before
 // going blank — a real flash-then-recall test, not just "react to
 // something you're already staring at."
 var FLASH_MS=Math.round(60000/FLASH_BPM);
 var TOTAL=50;
+var MAX_NO_RESPONSE=3; // three no-response beats — whether spread out
+// across the game or three in a row — ends the drill immediately
+// rather than letting it run on with someone who's stopped engaging.
 var BEST_KEY='rct-101flash-best';
 var BOX_KEY='rct-101flash-boxscore';
 
@@ -366,21 +368,21 @@ function handleTimeout(){
   awaitingResponse=false;
   clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
-  // No response at all is scored exactly like any other tap would be —
-  // through the same speed formula — just evaluated at the full
-  // RESPONSE_TIMEOUT_MS (the 30 BPM threshold) rather than a real
-  // measured RT. At that value the formula naturally lands on its
-  // 1-point floor, so this isn't a punitive penalty on top of a miss —
-  // it's simply the worst-case result the formula already produces for
-  // an extremely slow response, applied consistently to no response.
+  // No response at all scores a flat zero — not the speed formula, not
+  // a penalty, just nothing earned for that target. Three of these
+  // across the game — whether spread out or three in a row — ends the
+  // drill immediately rather than letting it run on with someone who
+  // has genuinely stopped engaging.
   noResponseCount++;
-  var pts=Math.max(1,Math.round(300-RESPONSE_TIMEOUT_MS/4));
-  totalPtsEarned+=pts;
-  score+=pts;
-  $('hLastMs').textContent=RESPONSE_TIMEOUT_MS+'ms+ · '+TIMEOUT_BPM+' BPM';
+  $('hLastMs').textContent='No response';
   flashWrong();
-  msg('✗ NO RESPONSE (+'+pts+')','wrong');
+  msg('✗ NO RESPONSE (0)','wrong');
   $('hScore').textContent=score;
+
+  if(noResponseCount>=MAX_NO_RESPONSE){
+    endDrill();
+    return;
+  }
   nextTarget();
 }
 
@@ -411,17 +413,12 @@ function handleChoice(side){
     setTimeout(function(){stimulus.classList.remove('hit')},100);
     msg('✓ +'+pts+'! ('+Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM)','correct');
   }else{
-    // A wrong direction gets the same consistent treatment as no
-    // response at all — scored through the identical formula at the
-    // 30 BPM threshold rather than a separate penalty rule. One
-    // formula, applied the same way everywhere: the only thing that
-    // changes your score is how fast (or whether) you got it right.
+    // A wrong direction scores exactly the same as no response —
+    // a flat zero. The only thing that changes your score is how fast
+    // you got it right; anything else is worth nothing, consistently.
     misses++;
-    var wrongPts=Math.max(1,Math.round(300-RESPONSE_TIMEOUT_MS/4));
-    totalPtsEarned+=wrongPts;
-    score+=wrongPts;
     flashWrong();
-    msg('✗ WRONG! (+'+wrongPts+')','wrong');
+    msg('✗ WRONG! (0)','wrong');
   }
   $('hScore').textContent=score;
   nextTarget();
@@ -447,25 +444,32 @@ function endDrill(){
   var finalScore=totalPtsEarned;
   var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
   var avgRT=rtCount?Math.round(totalRT/rtCount):0;
-  var isNewPts=finalScore>best;
+  var completed=(idx>=TOTAL);
+  var endedEarly=(noResponseCount>=MAX_NO_RESPONSE&&!completed);
+  var isNewPts=completed&&finalScore>best;
   if(isNewPts){best=finalScore;saveBest()}
 
   $('endNum').textContent=finalScore;
   $('endAvgMs').textContent=avgRT>0?('Avg '+avgRT+' MS · '+bpmFromMs(avgRT)+' BPM'):'';
   lastAvgBpm=avgRT>0?bpmFromMs(avgRT):0;
   $('hearBpmBtn').style.display=lastAvgBpm>0?'inline-flex':'none';
-  $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
+  $('endAcc').textContent=(completed?TOTAL:idx)+'/'+TOTAL+' targets · '+correctCount+' correct · '+accPct+'% accuracy';
   $('endMisses').textContent=misses+' WRONG · '+noResponseCount+' NO RESPONSE';
   $('endMisses').className='final-misses'+((misses===0&&noResponseCount===0)?' clean':'');
 
-  if(isNewPts&&finalScore>0){
+  if(endedEarly){
+    $('endHead').textContent='Drill Ended Early';
+    $('endSub').textContent='Three no-response targets ends the drill — only a completed 50-target run posts to your Box Score. Give it another go!';
+  }else if(isNewPts&&finalScore>0){
     $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points!';
   }else{
     $('endHead').textContent='Drill Complete!';$('endSub').textContent='Great taps. Beat this number next time!';
   }
 
-  window.__lastGameBox={pts:finalScore,made:correctCount,attempts:TOTAL,miss:misses,ms:avgRT,date:new Date().toLocaleDateString()};
-  recordGameToBoxScore(finalScore,correctCount,TOTAL,misses,avgRT);
+  if(completed){
+    window.__lastGameBox={pts:finalScore,made:correctCount,attempts:TOTAL,miss:misses,ms:avgRT,date:new Date().toLocaleDateString()};
+    recordGameToBoxScore(finalScore,correctCount,TOTAL,misses,avgRT);
+  }
 
   $('screen-end').style.display='flex';
 }

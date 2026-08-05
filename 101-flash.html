@@ -23,6 +23,30 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 #hLeft{color:#ff6b7f}#hScore{color:#fff;font-size:2.1rem}#hLastMs{font-size:1.1rem;color:var(--cy)}#hBest{font-size:1.1rem;color:var(--muted)}
 
 #msg{position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:20;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;text-align:center;pointer-events:none;transition:opacity .2s;width:90%}
+
+/* Live scoreboard — a real, running shot-by-shot record, exactly like
+   a basketball box score fills in as the game happens. Scrolls to the
+   newest chip automatically so the latest result is always visible. */
+#scoreboard{position:fixed;top:calc(100px + env(safe-area-inset-top));left:0;right:0;z-index:15;display:flex;gap:6px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+#scoreboard::-webkit-scrollbar{display:none}
+.shot-chip{flex:0 0 auto;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1rem;font-weight:900;color:#fff}
+.shot-chip.chip-3{background:linear-gradient(135deg,#ffd23f,#ff9b00);box-shadow:0 0 14px rgba(255,180,0,.7)}
+.shot-chip.chip-2{background:rgba(0,229,255,.18);border:1px solid rgba(0,229,255,.4);color:#00e5ff}
+.shot-chip.chip-x{background:rgba(255,30,60,.18);border:1px solid rgba(255,30,60,.4);color:#ff6b7f}
+.shot-chip.chip-new{animation:chipPop .35s ease-out}
+@keyframes chipPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
+.shot-chip.chip-3.chip-new{animation:chipFlash3 .5s ease-out}
+@keyframes chipFlash3{
+  0%{transform:scale(.4);opacity:0;box-shadow:0 0 0 rgba(255,180,0,0)}
+  40%{transform:scale(1.4);box-shadow:0 0 30px rgba(255,180,0,1)}
+  100%{transform:scale(1);opacity:1;box-shadow:0 0 14px rgba(255,180,0,.7)}
+}
+
+/* Same chip strip, reused read-only on the end screen and Box Score —
+   smaller, wraps instead of scrolling, since there's no live game
+   happening there to auto-follow. */
+.scoreboard-static{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:340px;margin:14px auto}
+.scoreboard-static .shot-chip{width:22px;height:22px;font-size:.72rem;border-radius:6px}
 #msg.watch{color:var(--red)}#msg.correct{color:#00D9A5}#msg.wrong{color:var(--red)}
 
 /* Stagnant, centered target — never moves. Only the arrow it carries
@@ -137,6 +161,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </div>
 
 <div id="msg" class="watch"></div>
+<div id="scoreboard"></div>
 
 <div id="stageWrap"><div id="stimulus"><svg class="gold-arrow" id="stimArrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></div></div>
 
@@ -173,6 +198,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
         <td id="boxLastMiss">--</td>
       </tr></tbody>
     </table>
+    <div class="scoreboard-static" id="boxLastScoreboard"></div>
   </div>
 
   <div class="box-section">
@@ -206,6 +232,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="final-label">Score (BPM)</div>
   <div class="final-acc" id="endAcc"></div>
   <div class="final-misses" id="endMisses"></div>
+  <div class="scoreboard-static" id="endScoreboard"></div>
   <button class="hear-bpm-btn" id="hearBpmBtn" style="display:none"><span class="beat-dot-ind" id="beatDotInd"></span> Hear Your Ritnome</button>
   <h2 id="endHead">Drill Complete!</h2>
   <div id="endSub">Great taps. Beat this number next time!</div>
@@ -233,15 +260,20 @@ var BOX_KEY='rct-101flash-boxscore';
 function $(id){return document.getElementById(id)}
 function bpmFromMs(v){return v?Math.round(60000/v):0}
 
+var FAST_MS=600; // the "three-point line" — respond within 600ms and
+// a correct tap is worth 3, same as basketball rewards a shot from
+// further out. Anything correct but slower than that is a standard
+// 2-point make. Wrong or no response is a miss: zero, same as it
+// always is on a scoreboard.
+
 var phase='idle';
 var idx=0,best=0,correctCount=0,misses=0,noResponseCount=0,totalRT=0,rtCount=0,shownAt=0;
-var totalBpmSum=0,roundsCompleted=0; // the whole scoring system: sum of
-// BPM for every correct tap, divided by every target attempted — a
-// wrong tap or no-response contributes zero to the sum but still
-// counts in the denominator, so the single resulting number can only
-// be high if you were BOTH fast and accurate. Being slow-but-perfect
-// caps your ceiling; being fast-but-careless tanks your average.
-// There's no way to game one dimension at the other's expense.
+var score=0,threes=0,shotLog=[]; // score is a running total, exactly like points
+// on a basketball scoreboard — it only ever goes up, in familiar
+// chunks of 2 or 3, never an abstract average. threes tracks how many
+// were fast enough to count as a 3-pointer. shotLog is the full,
+// ordered history of every round's outcome ('3','2','x'), driving the
+// on-screen scoreboard live and carrying through to the end screen.
 var lastAvgBpm=0,beatPreviewPlaying=false;
 var currentSide=null,awaitingResponse=false;
 var roundTimer=null,flashTimer=null;
@@ -266,13 +298,13 @@ function loadBoxData(){
   return {gp:0,totalScore:0,totalMade:0,totalAttempts:0,totalMisses:0,high:0,recent:[]};
 }
 function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
-function recordGameToBoxScore(finalScore,made,attempts,missCount){
+function recordGameToBoxScore(finalScore,made,attempts,missCount,threesCount,shots){
   var d=loadBoxData();
   // safe upgrade for any box score saved under the old points-based system
   if(typeof d.totalScore!=='number')d.totalScore=(typeof d.totalPts==='number')?d.totalPts:0;
   d.gp++;d.totalScore+=finalScore;d.totalMade+=made;d.totalAttempts+=attempts;d.totalMisses+=missCount;
   if(finalScore>d.high)d.high=finalScore;
-  d.recent.unshift({score:finalScore,made:made,attempts:attempts,miss:missCount,date:new Date().toLocaleDateString()});
+  d.recent.unshift({score:finalScore,made:made,attempts:attempts,miss:missCount,threes:threesCount,shots:shots,date:new Date().toLocaleDateString()});
   if(d.recent.length>8)d.recent=d.recent.slice(0,8);
   saveBoxData(d);
   return d;
@@ -287,8 +319,10 @@ function renderBoxScore(lastGame){
     $('boxLastFg').textContent=l.made+'-'+l.attempts;
     $('boxLastFgPct').textContent=pct(l.made,l.attempts);
     $('boxLastMiss').textContent=l.miss;
+    renderScoreboard($('boxLastScoreboard'),l.shots||[]);
   }else{
     $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMiss').textContent='--';
+    renderScoreboard($('boxLastScoreboard'),[]);
   }
   $('boxGP').textContent=d.gp;
   $('boxPPG').textContent=d.gp>0?(d.totalScore/d.gp).toFixed(1):'--';
@@ -301,7 +335,7 @@ function renderBoxScore(lastGame){
   }else{
     listEl.innerHTML=d.recent.map(function(g){
       var s=(typeof g.score==='number')?g.score:g.pts;
-      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+s+' BPM</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+'</span></div>';
+      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+s+' PTS</b> · '+g.made+'-'+g.attempts+' · '+g.miss+' miss'+(g.miss===1?'':'es')+'</span></div>';
     }).join('');
   }
 }
@@ -325,10 +359,37 @@ function startDrill(){
 }
 
 function runDrill(){
-  phase='running';idx=0;correctCount=0;misses=0;noResponseCount=0;totalRT=0;rtCount=0;totalBpmSum=0;roundsCompleted=0;
+  phase='running';idx=0;correctCount=0;misses=0;noResponseCount=0;totalRT=0;rtCount=0;score=0;threes=0;shotLog=[];
   $('hScore').textContent='0';$('hLeft').textContent=TOTAL;$('hLastMs').textContent='--';
+  $('scoreboard').innerHTML='';
   stimulus.classList.add('visible');
   nextTarget();
+}
+
+// Renders a full shot log into any container — used for the live
+// strip during play, and again read-only on the end screen. 't' is
+// only passed for the live version, so the newest chip gets its pop/
+// flash animation; the static end-screen render shows the same chips
+// without replaying every animation at once.
+function renderScoreboard(container,log){
+  if(!container)return;
+  container.innerHTML=log.map(function(s){
+    var cls=s==='3'?'chip-3':s==='2'?'chip-2':'chip-x';
+    var label=s==='x'?'X':s;
+    return '<div class="shot-chip '+cls+'">'+label+'</div>';
+  }).join('');
+}
+function pushShotChip(result){
+  shotLog.push(result);
+  var board=$('scoreboard');
+  if(!board)return;
+  var cls=result==='3'?'chip-3':result==='2'?'chip-2':'chip-x';
+  var label=result==='x'?'X':result;
+  var chip=document.createElement('div');
+  chip.className='shot-chip '+cls+' chip-new';
+  chip.textContent=label;
+  board.appendChild(chip);
+  board.scrollLeft=board.scrollWidth;
 }
 
 // Open-ended per round: the target waits for a real tap and scores on
@@ -398,17 +459,16 @@ function handleTimeout(){
   awaitingResponse=false;
   clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
-  // No response contributes zero to the running average — it still
-  // counts as a target attempted, just with nothing earned for it.
-  // Three of these across the game — whether spread out or three in a
-  // row — ends the drill immediately rather than letting it run on
-  // with someone who has genuinely stopped engaging.
+  // A miss — zero, same as any missed shot. Three of these across the
+  // game — whether spread out or three in a row — ends the drill
+  // immediately rather than letting it run on with someone who has
+  // genuinely stopped engaging.
   noResponseCount++;
-  roundsCompleted++;
+  pushShotChip('x');
   $('hLastMs').textContent='No response';
   flashWrong();
   msg('✗ NO RESPONSE (0)','wrong');
-  updateLiveScore();
+  $('hScore').textContent=score;
 
   if(noResponseCount>=MAX_NO_RESPONSE){
     endDrill();
@@ -422,44 +482,38 @@ function flashWrong(){
   setTimeout(function(){stimulus.classList.remove('hit')},100);
 }
 
-// The live "Score" is the running average BPM across every target
-// attempted so far — correct taps contribute their real speed, a
-// wrong tap or no-response contributes zero, and the denominator is
-// every round resolved either way. This is the exact same formula
-// the end screen shows, just recalculated live as it goes, so the
-// number in the HUD during play IS the real score, not a preview of it.
-function updateLiveScore(){
-  var avg=roundsCompleted?Math.round(totalBpmSum/roundsCompleted):0;
-  $('hScore').textContent=avg;
-}
-
 function handleChoice(side){
   if(phase!=='running'||!awaitingResponse)return;
   awaitingResponse=false;
   clearTimeout(roundTimer);
   clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
-  roundsCompleted++;
 
   if(side===currentSide){
     var rt=performance.now()-shownAt;
     var bpm=bpmFromMs(rt);
+    // Basketball scoring, plainly: a fast correct tap is a 3-pointer,
+    // a normal-speed correct tap is a 2-pointer. Score only ever goes
+    // up, in familiar whole chunks — never an abstract rate.
+    var isThree=rt<=FAST_MS;
+    var pts=isThree?3:2;
+    if(isThree)threes++;
     correctCount++;
-    totalBpmSum+=bpm;
+    score+=pts;
     totalRT+=rt;rtCount++;
+    pushShotChip(isThree?'3':'2');
     $('hLastMs').textContent=bpm;
     stimulus.classList.add('hit');
     setTimeout(function(){stimulus.classList.remove('hit')},100);
-    msg('✓ '+bpm+' BPM','correct');
+    msg((isThree?'✓ 3-POINTER! (+3)':'✓ +2!')+' ('+bpm+' BPM)','correct');
   }else{
-    // A wrong direction contributes zero to the average, exactly like
-    // no response — the only thing that ever raises your score is
-    // answering correctly, and answering fast when you do.
+    // A wrong direction is a miss — zero, exactly like no response.
     misses++;
+    pushShotChip('x');
     flashWrong();
     msg('✗ WRONG! (0)','wrong');
   }
-  updateLiveScore();
+  $('hScore').textContent=score;
   nextTarget();
 }
 
@@ -478,16 +532,13 @@ function endDrill(){
   if(phase==='done')return;
   phase='done';clearTimeout(roundTimer);clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
-  // The single score: total BPM earned across every correct tap,
-  // divided by every target attempted — not just the correct ones. A
-  // wrong tap or no-response pulls this down by contributing zero to
-  // the sum while still counting in the denominator, so the only way
-  // to post a high number is being both fast AND accurate. This is
-  // naturally order-independent too, since it's the true accumulated
-  // sum divided by the true total, not a running value that could
-  // have been affected by which order things happened in.
-  var finalScore=roundsCompleted?Math.round(totalBpmSum/roundsCompleted):0;
+  // Score is the running point total — plain basketball scoring, not
+  // an abstract rate. Every correct tap adds a real, familiar chunk
+  // (2 or 3), every miss adds nothing. The number people see is the
+  // exact same number that was climbing on screen the whole game.
+  var finalScore=score;
   var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
+  var avgRT=rtCount?Math.round(totalRT/rtCount):0;
   var completed=(idx>=TOTAL);
   var endedEarly=(noResponseCount>=MAX_NO_RESPONSE&&!completed);
   var isNewBest=completed&&finalScore>best;
@@ -497,24 +548,25 @@ function endDrill(){
   $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
   $('endMisses').textContent=misses+' WRONG · '+noResponseCount+' NO RESPONSE';
   $('endMisses').className='final-misses'+((misses===0&&noResponseCount===0)?' clean':'');
-  lastAvgBpm=finalScore;
-  $('hearBpmBtn').style.display=finalScore>0?'inline-flex':'none';
+  lastAvgBpm=avgRT>0?bpmFromMs(avgRT):0;
+  $('hearBpmBtn').style.display=lastAvgBpm>0?'inline-flex':'none';
 
   if(endedEarly){
     $('endHead').textContent='Drill Ended Early';
     $('endSub').textContent='Three no-response targets ends the drill — only a completed 50-target run posts to your Box Score. Give it another go!';
   }else if(isNewBest&&finalScore>0){
-    $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' BPM!';
+    $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points!';
   }else{
     $('endHead').textContent='Drill Complete!';$('endSub').textContent='Great taps. Beat this number next time!';
   }
 
   if(completed){
-    window.__lastGameBox={score:finalScore,made:correctCount,attempts:TOTAL,miss:misses,date:new Date().toLocaleDateString()};
-    recordGameToBoxScore(finalScore,correctCount,TOTAL,misses);
+    window.__lastGameBox={score:finalScore,made:correctCount,attempts:TOTAL,miss:misses,threes:threes,shots:shotLog.slice(),date:new Date().toLocaleDateString()};
+    recordGameToBoxScore(finalScore,correctCount,TOTAL,misses,threes,shotLog);
   }
 
   $('screen-end').style.display='flex';
+  renderScoreboard($('endScoreboard'),shotLog);
 }
 
 $('nextPlayerBtn').onclick=function(){$('screen-end').style.display='none';startDrill()};

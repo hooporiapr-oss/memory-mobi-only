@@ -16,30 +16,35 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overflow:hidden}
 
-#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,rgba(0,0,0,.8),transparent)}
+#topClock{position:fixed;top:0;left:0;right:0;z-index:21;text-align:center;padding:calc(8px + env(safe-area-inset-top)) 16px 2px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}
+#topClock .clock-label{font-size:.52rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--cy);margin-bottom:1px}
+#topClock .clock-val{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:1px;line-height:1;color:#fff}
+#topClock .clock-val.urgent{color:var(--red);animation:clockPulse .5s ease-in-out infinite}
+@keyframes clockPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+#hud{position:fixed;top:calc(46px + env(safe-area-inset-top));left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:0 16px 8px}
 .hud-box{text-align:center}
 .hud-label{font-size:.55rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:2px}
 .hud-val{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:1px;line-height:1}
-#hLeft{color:#ff6b7f}#hScore{color:#fff;font-size:2.1rem}#hLastMs{font-size:1.1rem;color:var(--cy)}#hBest{font-size:1.1rem;color:var(--muted)}
+#hScore{color:#fff;font-size:2.1rem}#hLastMs{font-size:1.1rem;color:var(--cy)}#hBest{font-size:1.1rem;color:var(--muted)}
 
-#msg{position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:20;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;text-align:center;pointer-events:none;transition:opacity .2s;width:90%}
+#msg{position:fixed;top:calc(108px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:20;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;text-align:center;pointer-events:none;transition:opacity .2s;width:90%}
 
 /* Live scoreboard — a real, running shot-by-shot record, exactly like
    a basketball box score fills in as the game happens. Scrolls to the
    newest chip automatically so the latest result is always visible. */
-#scoreboard{position:fixed;top:calc(100px + env(safe-area-inset-top));left:0;right:0;z-index:15;display:flex;gap:6px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+#scoreboard{position:fixed;top:calc(138px + env(safe-area-inset-top));left:0;right:0;z-index:15;display:flex;gap:6px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
 #scoreboard::-webkit-scrollbar{display:none}
 .shot-chip{flex:0 0 auto;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1rem;font-weight:900;color:#fff}
-.shot-chip.chip-3{background:linear-gradient(135deg,#ffd23f,#ff9b00);box-shadow:0 0 14px rgba(255,180,0,.7)}
-.shot-chip.chip-2{background:rgba(0,229,255,.18);border:1px solid rgba(0,229,255,.4);color:#00e5ff}
+.shot-chip.chip-hit{background:rgba(0,229,255,.18);border:1px solid rgba(0,229,255,.4);color:#00e5ff}
 .shot-chip.chip-x{background:rgba(255,30,60,.18);border:1px solid rgba(255,30,60,.4);color:#ff6b7f}
 .shot-chip.chip-new{animation:chipPop .35s ease-out}
 @keyframes chipPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
-.shot-chip.chip-3.chip-new{animation:chipFlash3 .5s ease-out}
-@keyframes chipFlash3{
-  0%{transform:scale(.4);opacity:0;box-shadow:0 0 0 rgba(255,180,0,0)}
-  40%{transform:scale(1.4);box-shadow:0 0 30px rgba(255,180,0,1)}
-  100%{transform:scale(1);opacity:1;box-shadow:0 0 14px rgba(255,180,0,.7)}
+.shot-chip.chip-hit.chip-new{animation:chipFlashHit .5s ease-out}
+@keyframes chipFlashHit{
+  0%{transform:scale(.4);opacity:0;box-shadow:0 0 0 rgba(0,229,255,0)}
+  40%{transform:scale(1.4);box-shadow:0 0 30px rgba(0,229,255,1)}
+  100%{transform:scale(1);opacity:1;box-shadow:0 0 14px rgba(0,229,255,.5)}
 }
 
 /* Same chip strip, reused read-only on the end screen and Box Score —
@@ -130,15 +135,24 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .box-table th{background:rgba(255,30,60,.16);color:#ff6b7f;font-size:.56rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:7px 4px;text-align:center}
 .box-table td{padding:10px 4px;text-align:center;font-weight:900;font-size:1rem;color:#fff}
 .box-table .box-pts{color:var(--red);font-size:1.25rem}
-.box-table th.col-0,.box-table td.box-zero{color:#ff6b7f}
-.box-table th.col-2,.box-table td.box-two{color:var(--cy)}
-.box-table th.col-3,.box-table td.box-three{color:#ffb400}
-.box-table td.box-zero,.box-table td.box-two,.box-table td.box-three{font-weight:900;font-size:1.05rem}
 .box-empty{color:var(--muted);font-size:.8rem;padding:20px 8px;font-style:italic}
 .box-back-btn{width:100%;max-width:360px;height:50px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font-size:.9rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:4px}
-.recent-row td{font-size:.78rem;padding:8px 4px}
-.recent-row td.recent-date{color:var(--muted);text-align:left;font-size:.68rem}
-.recent-row td.recent-score{color:var(--red);font-weight:900}
+.box-recent-row{font-size:.72rem;color:var(--muted);padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;cursor:pointer}
+.box-recent-row:last-child{border-bottom:none}
+.box-recent-row:active{background:rgba(255,30,60,.08)}
+.box-recent-row b{color:#ffb400}
+.box-recent-row .expand-hint{color:var(--red);font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
+/* Tap-by-tap — the full, ordered history of a single game, not just
+   its summary numbers. */
+.tap-log{display:flex;flex-wrap:wrap;gap:4px;padding:10px;background:rgba(255,30,60,.05);border:1px solid rgba(255,30,60,.2);border-radius:12px;margin-top:8px}
+.tap-chip{flex:0 0 auto;min-width:40px;padding:4px 5px;border-radius:6px;text-align:center;font-family:'Outfit',sans-serif;font-size:.58rem;font-weight:900;line-height:1.3}
+.tap-chip.hit{background:rgba(0,229,255,.16);border:1px solid rgba(0,229,255,.4);color:var(--cy)}
+.tap-chip.miss{background:rgba(255,30,60,.14);border:1px solid rgba(255,30,60,.35);color:#ff8fa3}
+.tap-chip .tap-bpm{display:block;font-size:.62rem}
+.tap-chip .tap-pts{display:block;opacity:.85;font-size:.54rem;margin-top:1px}
+.tap-log-total{width:100%;text-align:center;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,30,60,.2);font-size:.78rem;font-weight:900;color:#fff}
+.tap-log-total b{color:var(--red);font-size:1rem}
+.tap-log-empty{color:var(--muted);font-size:.72rem;font-style:italic;padding:6px}
 
 #countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:var(--dark)}
 #bigCount{font-family:'Bebas Neue',sans-serif;font-size:7rem;color:var(--red);text-shadow:0 0 50px rgba(255,30,60,.8)}
@@ -162,8 +176,12 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 
 <a id="backBtn" href="mobile-lab.html">← Back</a>
 
+<div id="topClock">
+  <div class="clock-label">Time Left</div>
+  <div class="clock-val" id="hClock">1:00</div>
+</div>
+
 <div id="hud">
-  <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
   <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
   <div class="hud-box"><div class="hud-label">BPM</div><div class="hud-val" id="hLastMs">--</div></div>
   <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
@@ -185,7 +203,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 <div id="screen-intro">
   <div class="vrr-logo">FLASH <span>REACTION</span></div>
   <div class="vrr-sub">Ritnome Memory · Reaction Speed</div>
-  <div class="rule-t"><b>50 targets.</b> The target flashes once, at 120 BPM, then goes blank — no new target appears until you respond, right or wrong, or 3 full seconds pass. Read it and tap the matching direction as fast as you can. Your score is your average BPM across all 50 targets — a wrong tap or no response counts as zero, so the only way to a high score is being both fast and accurate. Three no-response targets in one game — spread out or in a row — ends the drill.</div>
+  <div class="rule-t"><b>60 seconds.</b> The target flashes once, at 120 BPM, then goes blank — no new target appears until you respond, right or wrong, or 3 full seconds pass. Read it and tap the matching direction. Every correct tap is scored on real speed — the faster you are, the more points you earn. A wrong direction or no response earns nothing, but costs you nothing either. How many points can you rack up before the clock runs out?</div>
   <button class="big-btn" id="bigStart" onclick="startDrill()">START</button>
   <div class="best-line" id="bestLine"></div>
   <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
@@ -199,35 +217,37 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
   <div class="box-section">
     <div class="box-section-label">Last Game</div>
     <table class="box-table">
-      <thead><tr><th class="col-0">0</th><th class="col-2">2</th><th class="col-3">3</th><th>SCORE</th></tr></thead>
+      <thead><tr><th>PTS</th><th>FG</th><th>FG%</th><th>AVG BPM</th><th>MISS</th></tr></thead>
       <tbody><tr>
-        <td class="box-zero" id="boxLastZero">--</td>
-        <td class="box-two" id="boxLastTwo">--</td>
-        <td class="box-three" id="boxLastThree">--</td>
         <td class="box-pts" id="boxLastPts">--</td>
+        <td id="boxLastFg">--</td>
+        <td id="boxLastFgPct">--</td>
+        <td id="boxLastBpm">--</td>
+        <td id="boxLastMiss">--</td>
       </tr></tbody>
     </table>
-    <div class="scoreboard-static" id="boxLastScoreboard"></div>
+    <div class="tap-log" id="lastGameTapLog"></div>
   </div>
 
   <div class="box-section">
     <div class="box-section-label">Career</div>
     <table class="box-table">
-      <thead><tr><th>GP</th><th>AVG SCORE</th><th>HIGH</th></tr></thead>
+      <thead><tr><th>GP</th><th>PPG</th><th>FG%</th><th>HIGH</th><th>AVG BPM</th><th>MISS/G</th></tr></thead>
       <tbody><tr>
         <td id="boxGP">--</td>
         <td class="box-pts" id="boxPPG">--</td>
+        <td id="boxCareerFgPct">--</td>
         <td id="boxHigh">--</td>
+        <td id="boxCareerBpm">--</td>
+        <td id="boxCareerMiss">--</td>
       </tr></tbody>
     </table>
   </div>
 
   <div class="box-section">
     <div class="box-section-label">Recent Games</div>
-    <table class="box-table">
-      <thead><tr><th>DATE</th><th class="col-0">0</th><th class="col-2">2</th><th class="col-3">3</th><th>SCORE</th></tr></thead>
-      <tbody id="boxRecentList"></tbody>
-    </table>
+    <div class="box-table" id="boxRecentList" style="border-radius:12px"></div>
+    <div class="tap-log" id="recentGameTapLog" style="display:none"></div>
   </div>
 
   <button class="box-back-btn" id="closeBoxBtn">← Back</button>
@@ -262,30 +282,21 @@ var FLASH_BPM=120; // how long the target actually stays visible before
 // going blank — a real flash-then-recall test, not just "react to
 // something you're already staring at."
 var FLASH_MS=Math.round(60000/FLASH_BPM);
-var TOTAL=50;
-var MAX_NO_RESPONSE=3; // three no-response beats — whether spread out
-// across the game or three in a row — ends the drill immediately
-// rather than letting it run on with someone who's stopped engaging.
+var CONTEST_MS=60000; // how many points can you rack up in a minute —
+// the clock is the only thing that ends this format, not a round count.
 var BEST_KEY='rct-101flash-best';
 var BOX_KEY='rct-101flash-boxscore';
 
 function $(id){return document.getElementById(id)}
 function bpmFromMs(v){return v?Math.round(60000/v):0}
 
-var FAST_MS=600; // the "three-point line" — respond within 600ms and
-// a correct tap is worth 3, same as basketball rewards a shot from
-// further out. Anything correct but slower than that is a standard
-// 2-point make. Wrong or no response is a miss: zero, same as it
-// always is on a scoreboard.
-
 var phase='idle';
-var idx=0,best=0,correctCount=0,misses=0,noResponseCount=0,totalRT=0,rtCount=0,shownAt=0;
-var score=0,threes=0,shotLog=[]; // score is a running total, exactly like points
-// on a basketball scoreboard — it only ever goes up, in familiar
-// chunks of 2 or 3, never an abstract average. threes tracks how many
-// were fast enough to count as a 3-pointer. shotLog is the full,
-// ordered history of every round's outcome ('3','2','x'), driving the
-// on-screen scoreboard live and carrying through to the end screen.
+var idx=0,best=0,correctCount=0,misses=0,totalRT=0,rtCount=0,shownAt=0;
+var score=0,shotLog=[]; // score is a running total of real, speed-
+// sensitive points — the faster the tap, the more it's worth. shotLog
+// is the full, ordered history of every round's outcome — hit or
+// miss, with the exact BPM and points each one earned — driving the
+// on-screen live scoreboard and carrying through to the Box Score.
 var lastAvgBpm=0,beatPreviewPlaying=false;
 var currentSide=null,awaitingResponse=false;
 var roundTimer=null,flashTimer=null;
@@ -298,7 +309,7 @@ function loadBest(){
   best=0;
   try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
   $('hBest').textContent=best;
-  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' BPM</b>'):'';
+  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' pts</b>'):'';
 }
 function saveBest(){try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
 
@@ -307,55 +318,104 @@ function loadBoxData(){
     var raw=localStorage.getItem(BOX_KEY);
     if(raw)return JSON.parse(raw);
   }catch(e){}
-  return {gp:0,totalScore:0,high:0,recent:[]};
+  return {gp:0,totalPts:0,totalMade:0,totalAttempts:0,totalMs:0,totalMisses:0,high:0,recent:[]};
 }
 function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
-function recordGameToBoxScore(finalScore,zeroCount,twoCount,threeCount,shots){
+function pct(made,attempts){return attempts>0?Math.round((made/attempts)*100)+'%':'--'}
+
+function recordGameToBoxScore(finalScore,made,attempts,avgMs,missCount,shots){
   var d=loadBoxData();
   // safe upgrade for any box score saved under an earlier version of this system
-  if(typeof d.totalScore!=='number')d.totalScore=(typeof d.totalPts==='number')?d.totalPts:0;
-  d.gp++;d.totalScore+=finalScore;
+  if(typeof d.totalPts!=='number')d.totalPts=(typeof d.totalScore==='number')?d.totalScore:0;
+  if(typeof d.totalMisses!=='number')d.totalMisses=0;
+  d.gp++;
+  d.totalPts+=finalScore;
+  d.totalMade+=made;
+  d.totalAttempts+=attempts;
+  d.totalMs+=avgMs;
+  d.totalMisses+=missCount;
   if(finalScore>d.high)d.high=finalScore;
-  d.recent.unshift({score:finalScore,zero:zeroCount,two:twoCount,three:threeCount,shots:shots,date:new Date().toLocaleDateString()});
+  d.recent.unshift({pts:finalScore,made:made,attempts:attempts,ms:avgMs,miss:missCount,date:new Date().toLocaleDateString(),shots:shots||[]});
   if(d.recent.length>8)d.recent=d.recent.slice(0,8);
   saveBoxData(d);
   return d;
 }
+
+// Renders one game's full tap-by-tap history into a container — a
+// real, ordered record of every hit and miss with its own BPM and
+// point value, plus the game's actual final total.
+function renderTapLog(container,shots,finalScore){
+  if(!shots||!shots.length){
+    container.innerHTML='<div class="tap-log-empty">No tap-by-tap detail saved for this game.</div>';
+    return;
+  }
+  var chips=shots.map(function(s){
+    if(s.hit){
+      return '<div class="tap-chip hit"><span class="tap-bpm">'+s.bpm+' BPM</span><span class="tap-pts">+'+s.pts+'</span></div>';
+    }
+    var label=s.noResponse?'NO RESP':(s.bpm>0?s.bpm+' BPM':'MISS');
+    return '<div class="tap-chip miss"><span class="tap-bpm">'+label+'</span><span class="tap-pts">0</span></div>';
+  }).join('');
+  container.innerHTML=chips+'<div class="tap-log-total">Final Total: <b>'+finalScore+' PTS</b></div>';
+}
+
 function renderBoxScore(lastGame){
   var d=loadBoxData();
-  if(typeof d.totalScore!=='number')d.totalScore=(typeof d.totalPts==='number')?d.totalPts:0;
+  if(typeof d.totalPts!=='number')d.totalPts=(typeof d.totalScore==='number')?d.totalScore:0;
+  if(typeof d.totalMisses!=='number')d.totalMisses=0;
+
+  var lastShots=null,lastFinalScore=0;
   var l=lastGame||(d.recent.length?d.recent[0]:null);
   if(l){
-    $('boxLastZero').textContent=l.zero;
-    $('boxLastTwo').textContent=l.two;
-    $('boxLastThree').textContent=l.three;
-    $('boxLastPts').textContent=l.score;
-    renderScoreboard($('boxLastScoreboard'),l.shots||[]);
+    $('boxLastPts').textContent=l.pts;
+    $('boxLastFg').textContent=l.made+'-'+l.attempts;
+    $('boxLastFgPct').textContent=pct(l.made,l.attempts);
+    $('boxLastBpm').textContent=l.ms>0?bpmFromMs(l.ms)+' BPM':'--';
+    $('boxLastMiss').textContent=(typeof l.miss==='number')?l.miss:'--';
+    lastShots=l.shots;lastFinalScore=l.pts;
   }else{
-    $('boxLastZero').textContent='--';$('boxLastTwo').textContent='--';$('boxLastThree').textContent='--';$('boxLastPts').textContent='--';
-    renderScoreboard($('boxLastScoreboard'),[]);
+    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastBpm').textContent='--';$('boxLastMiss').textContent='--';
   }
+  renderTapLog($('lastGameTapLog'),lastShots,lastFinalScore);
+
   $('boxGP').textContent=d.gp;
-  $('boxPPG').textContent=d.gp>0?(d.totalScore/d.gp).toFixed(1):'--';
+  $('boxPPG').textContent=d.gp>0?(d.totalPts/d.gp).toFixed(1):'--';
+  $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
   $('boxHigh').textContent=d.high>0?d.high:'--';
+  $('boxCareerBpm').textContent=d.gp>0?bpmFromMs(Math.round(d.totalMs/d.gp))+' BPM':'--';
+  $('boxCareerMiss').textContent=d.gp>0?(d.totalMisses/d.gp).toFixed(1):'--';
+
   var listEl=$('boxRecentList');
+  var tapLogEl=$('recentGameTapLog');
+  tapLogEl.style.display='none';
+  var openRowIdx=-1;
   if(!d.recent.length){
-    listEl.innerHTML='<tr><td colspan="5" class="box-empty">No games yet — play a round to start your box score.</td></tr>';
+    listEl.innerHTML='<div class="box-empty">No games yet — play a round to start your box score.</div>';
   }else{
-    listEl.innerHTML=d.recent.map(function(g){
-      return '<tr class="recent-row">'
-        +'<td class="recent-date">'+g.date+'</td>'
-        +'<td class="box-zero">'+g.zero+'</td>'
-        +'<td class="box-two">'+g.two+'</td>'
-        +'<td class="box-three">'+g.three+'</td>'
-        +'<td class="recent-score">'+g.score+'</td>'
-        +'</tr>';
+    listEl.innerHTML=d.recent.map(function(g,i){
+      var missText=(typeof g.miss==='number')?(' · '+g.miss+' miss'+(g.miss===1?'':'es')):'';
+      return '<div class="box-recent-row" data-idx="'+i+'"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' ('+pct(g.made,g.attempts)+') · '+bpmFromMs(g.ms)+' BPM'+missText+'<span class="expand-hint">tap for detail</span></span></div>';
     }).join('');
+    listEl.querySelectorAll('.box-recent-row').forEach(function(row){
+      row.addEventListener('click',function(){
+        var idx=parseInt(row.dataset.idx,10);
+        if(openRowIdx===idx){
+          tapLogEl.style.display='none';
+          openRowIdx=-1;
+          return;
+        }
+        openRowIdx=idx;
+        var g=d.recent[idx];
+        renderTapLog(tapLogEl,g.shots,g.pts);
+        tapLogEl.style.display='flex';
+        row.insertAdjacentElement('afterend',tapLogEl);
+      });
+    });
   }
 }
 var boxReturnScreen='screen-intro';
-$('openBoxBtn').onclick=function(){boxReturnScreen='screen-intro';renderBoxScore(window.__lastGameBox);$('screen-intro').style.display='none';$('screen-box').style.display='flex';};
-$('openBoxBtnEnd').onclick=function(){boxReturnScreen='screen-end';renderBoxScore(window.__lastGameBox);$('screen-end').style.display='none';$('screen-box').style.display='flex';};
+$('openBoxBtn').onclick=function(){boxReturnScreen='screen-intro';renderBoxScore(window.__lastGameBox?window.__lastGameBox.recent[0]:null);$('screen-intro').style.display='none';$('screen-box').style.display='flex';};
+$('openBoxBtnEnd').onclick=function(){boxReturnScreen='screen-end';renderBoxScore(window.__lastGameBox?window.__lastGameBox.recent[0]:null);$('screen-end').style.display='none';$('screen-box').style.display='flex';};
 $('closeBoxBtn').onclick=function(){$('screen-box').style.display='none';document.getElementById(boxReturnScreen).style.display='flex';};
 
 function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
@@ -372,36 +432,52 @@ function startDrill(){
   },700);
 }
 
+var contestTimerInterval=null,contestEndAt=0;
 function runDrill(){
-  phase='running';idx=0;correctCount=0;misses=0;noResponseCount=0;totalRT=0;rtCount=0;score=0;threes=0;shotLog=[];
-  $('hScore').textContent='0';$('hLeft').textContent=TOTAL;$('hLastMs').textContent='--';
+  phase='running';idx=0;correctCount=0;misses=0;totalRT=0;rtCount=0;score=0;shotLog=[];
+  $('hScore').textContent='0';$('hLastMs').textContent='--';
   $('scoreboard').innerHTML='';
   stimulus.classList.add('visible');
+
+  contestEndAt=performance.now()+CONTEST_MS;
+  updateContestClock();
+  clearInterval(contestTimerInterval);
+  contestTimerInterval=setInterval(function(){
+    updateContestClock();
+    if(performance.now()>=contestEndAt){
+      clearInterval(contestTimerInterval);
+      endDrill();
+    }
+  },100);
+
   nextTarget();
+}
+function updateContestClock(){
+  var remainMs=Math.max(0,contestEndAt-performance.now());
+  var totalSec=Math.ceil(remainMs/1000);
+  var m=Math.floor(totalSec/60);
+  var s=totalSec%60;
+  var el=$('hClock');
+  el.textContent=m+':'+(s<10?'0':'')+s;
+  el.className='clock-val'+(totalSec<=10?' urgent':'');
 }
 
 // Renders a full shot log into any container — used for the live
-// strip during play, and again read-only on the end screen. 't' is
-// only passed for the live version, so the newest chip gets its pop/
-// flash animation; the static end-screen render shows the same chips
-// without replaying every animation at once.
+// strip during play, and again read-only on the end screen.
 function renderScoreboard(container,log){
   if(!container)return;
   container.innerHTML=log.map(function(s){
-    var cls=s==='3'?'chip-3':s==='2'?'chip-2':'chip-x';
-    var label=s==='x'?'X':s;
-    return '<div class="shot-chip '+cls+'">'+label+'</div>';
+    if(s.hit)return '<div class="shot-chip chip-hit">'+s.bpm+'</div>';
+    return '<div class="shot-chip chip-x">X</div>';
   }).join('');
 }
-function pushShotChip(result){
-  shotLog.push(result);
+function pushShotChip(entry){
+  shotLog.push(entry);
   var board=$('scoreboard');
   if(!board)return;
-  var cls=result==='3'?'chip-3':result==='2'?'chip-2':'chip-x';
-  var label=result==='x'?'X':result;
   var chip=document.createElement('div');
-  chip.className='shot-chip '+cls+' chip-new';
-  chip.textContent=label;
+  chip.className='shot-chip '+(entry.hit?'chip-hit':'chip-x')+' chip-new';
+  chip.textContent=entry.hit?entry.bpm:'X';
   board.appendChild(chip);
   board.scrollLeft=board.scrollWidth;
 }
@@ -414,10 +490,6 @@ function pushShotChip(result){
 function nextTarget(){
   if(phase!=='running')return;
   idx++;
-  if(idx>TOTAL){
-    endDrill();
-    return;
-  }
 
   awaitingResponse=true;
   // Never repeat the direction that just showed — pick randomly from
@@ -428,7 +500,6 @@ function nextTarget(){
   stimArrow.style.transform='rotate('+DIR_DEG[currentSide]+'deg)';
   stimulus.classList.add('visible');
   shownAt=performance.now();
-  $('hLeft').textContent=Math.max(0,TOTAL-idx+1);
   shuffleButtonLayout();
 
   // A real flash, not a continuous stare — the target shows for one
@@ -473,21 +544,15 @@ function handleTimeout(){
   awaitingResponse=false;
   clearTimeout(flashTimer);
   stimulus.classList.remove('visible');
-  // A miss — zero, same as any missed shot. Three of these across the
-  // game — whether spread out or three in a row — ends the drill
-  // immediately rather than letting it run on with someone who has
-  // genuinely stopped engaging.
-  noResponseCount++;
-  pushShotChip('x');
+  // A miss — zero, same as any missed shot — but the drill keeps
+  // going regardless, since the 60-second clock is the only thing
+  // that ever ends this format now.
+  misses++;
+  pushShotChip({hit:false,bpm:0,pts:0,noResponse:true});
   $('hLastMs').textContent='No response';
   flashWrong();
   msg('✗ NO RESPONSE (0)','wrong');
   $('hScore').textContent=score;
-
-  if(noResponseCount>=MAX_NO_RESPONSE){
-    endDrill();
-    return;
-  }
   nextTarget();
 }
 
@@ -506,26 +571,25 @@ function handleChoice(side){
   if(side===currentSide){
     var rt=performance.now()-shownAt;
     var bpm=bpmFromMs(rt);
-    // Basketball scoring, plainly: a fast correct tap is a 3-pointer,
-    // a normal-speed correct tap is a 2-pointer. Score only ever goes
-    // up, in familiar whole chunks — never an abstract rate.
-    var isThree=rt<=FAST_MS;
-    var pts=isThree?3:2;
-    if(isThree)threes++;
+    // Speed-sensitive scoring: 300 points at an instant tap, decaying
+    // down to exactly 1 point at 30 BPM (2000ms) — the faster you are,
+    // the more it's worth, same formula as Basketball Flash Reaction.
+    var tapPts=Math.max(1,Math.round(300-rt/6.689));
     correctCount++;
-    score+=pts;
+    score+=tapPts;
     totalRT+=rt;rtCount++;
-    pushShotChip(isThree?'3':'2');
+    pushShotChip({hit:true,bpm:bpm,pts:tapPts});
     $('hLastMs').textContent=bpm;
     stimulus.classList.add('hit');
     setTimeout(function(){stimulus.classList.remove('hit')},100);
-    msg((isThree?'✓ 3-POINTER! (+3)':'✓ +2!')+' ('+bpm+' BPM)','correct');
+    msg(bpm+' BPM · +'+tapPts+' PTS','correct');
   }else{
-    // A wrong direction is a miss — zero, exactly like no response.
+    // A wrong direction earns nothing, but costs nothing either.
+    var wrongRt=performance.now()-shownAt;
     misses++;
-    pushShotChip('x');
+    pushShotChip({hit:false,bpm:bpmFromMs(wrongRt),pts:0,noResponse:false});
     flashWrong();
-    msg('✗ WRONG! (0)','wrong');
+    msg('✗ MISS (0 PTS)','wrong');
   }
   $('hScore').textContent=score;
   nextTarget();
@@ -544,47 +608,46 @@ function handleChoice(side){
 
 function endDrill(){
   if(phase==='done')return;
-  phase='done';clearTimeout(roundTimer);clearTimeout(flashTimer);
+  // If the clock runs out while a target is still actively on screen
+  // awaiting a response, that round must never just vanish from the
+  // tally — the player saw it and didn't get to respond in time,
+  // which is a real miss, exactly like any other no-response.
+  if(awaitingResponse){
+    awaitingResponse=false;
+    misses++;
+    pushShotChip({hit:false,bpm:0,pts:0,noResponse:true});
+  }
+  phase='done';clearTimeout(roundTimer);clearTimeout(flashTimer);clearInterval(contestTimerInterval);
   stimulus.classList.remove('visible');
-  // Score is the running point total — plain basketball scoring, not
-  // an abstract rate. Every correct tap adds a real, familiar chunk
-  // (2 or 3), every miss adds nothing. The number people see is the
-  // exact same number that was climbing on screen the whole game.
+  // Score is the running point total — every correct tap adds real,
+  // speed-sensitive points, every miss adds nothing. The number people
+  // see is the exact same number that was climbing on screen the
+  // whole game.
   var finalScore=score;
-  var accPct=TOTAL>0?Math.round((correctCount/TOTAL)*100):0;
+  var attempts=correctCount+misses;
+  var accPct=attempts>0?Math.round((correctCount/attempts)*100):0;
   var avgRT=rtCount?Math.round(totalRT/rtCount):0;
-  var completed=(idx>=TOTAL);
-  var endedEarly=(noResponseCount>=MAX_NO_RESPONSE&&!completed);
-  var isNewBest=completed&&finalScore>best;
+  var isNewBest=finalScore>best;
   if(isNewBest){best=finalScore;saveBest()}
 
   $('endNum').textContent=finalScore;
-  var targetsShown=completed?TOTAL:idx;
-  $('endCompletion').textContent=targetsShown+'/'+TOTAL+' TARGETS'+(completed?' · COMPLETE':'');
-  $('endCompletion').className='completion-badge '+(completed?'complete':'incomplete');
-  $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
-  $('endMisses').textContent=misses+' WRONG · '+noResponseCount+' NO RESPONSE';
-  $('endMisses').className='final-misses'+((misses===0&&noResponseCount===0)?' clean':'');
+  $('endCompletion').textContent=correctCount+' HITS IN 60 SECONDS';
+  $('endCompletion').className='completion-badge complete';
+  $('endAcc').textContent=correctCount+'/'+attempts+' correct · '+accPct+'% accuracy';
+  $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES');
+  $('endMisses').className='final-misses'+(misses===0?' clean':'');
   lastAvgBpm=avgRT>0?bpmFromMs(avgRT):0;
   $('hearBpmBtn').style.display=lastAvgBpm>0?'inline-flex':'none';
   $('bpmAvgLabel').innerHTML=lastAvgBpm>0?('Your Ritnome BPM Average: <b>'+lastAvgBpm+' BPM</b>'):'';
   $('bpmAvgLabel').style.display=lastAvgBpm>0?'block':'none';
 
-  if(endedEarly){
-    $('endHead').textContent='Drill Ended Early';
-    $('endSub').textContent='Three no-response targets ends the drill — only a completed 50-target run posts to your Box Score. Give it another go!';
-  }else if(isNewBest&&finalScore>0){
+  if(isNewBest&&finalScore>0){
     $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points!';
   }else{
-    $('endHead').textContent='Drill Complete!';$('endSub').textContent='Great taps. Beat this number next time!';
+    $('endHead').textContent="Time's Up!";$('endSub').textContent='Great taps. Beat this number next time!';
   }
 
-  if(completed){
-    var zeros=misses+noResponseCount;
-    var twos=correctCount-threes;
-    window.__lastGameBox={score:finalScore,zero:zeros,two:twos,three:threes,shots:shotLog.slice(),date:new Date().toLocaleDateString()};
-    recordGameToBoxScore(finalScore,zeros,twos,threes,shotLog);
-  }
+  window.__lastGameBox=recordGameToBoxScore(finalScore,correctCount,attempts,avgRT,misses,shotLog);
 
   $('screen-end').style.display='flex';
   renderScoreboard($('endScoreboard'),shotLog);

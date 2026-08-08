@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+if (localStorage.getItem('rct-mobile-pass') !== '1') {
+  window.location.replace('index.html');
+}
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Final Score — Ritnome Memory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#ff1e3c;--red-deep:#c8102e;--dark:#0a0a0f;--card:#111118;--text:#fff;--muted:#8892a0;--border:rgba(255,255,255,0.1);--purple:#9B59B6}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overflow-x:hidden}
+
+#stage{position:relative;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(28px + env(safe-area-inset-top)) 18px calc(30px + env(safe-area-inset-bottom))}
+#panel{width:100%;max-width:460px;text-align:center}
+
+.buzzer{font-size:.68rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:var(--purple);margin-bottom:8px}
+.final-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;text-transform:uppercase;color:#fff;text-shadow:0 0 32px rgba(255,30,60,.7);margin-bottom:26px}
+.final-title span{color:var(--red)}
+
+.qs-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;margin-bottom:22px}
+.qs-cell{border-radius:12px;border:2px solid rgba(255,30,60,.35);background:rgba(255,30,60,.06);padding:16px 4px}
+.qs-label{font-size:.58rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#ffd35a;margin-bottom:5px}
+.qs-val{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#fff}
+
+.total-row{
+  border-radius:18px;border:2px solid rgba(155,89,182,.5);
+  background:linear-gradient(135deg,rgba(155,89,182,.18),rgba(255,255,255,.03));
+  padding:22px;margin-bottom:26px;box-shadow:0 0 40px rgba(155,89,182,.35);
+}
+.total-label{font-size:.68rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#c79ee0;margin-bottom:6px}
+.total-val{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:#fff;text-shadow:0 0 26px rgba(155,89,182,.7)}
+
+.action-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;min-height:56px;border:none;border-radius:16px;
+  font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:1.5px;
+  text-transform:uppercase;cursor:pointer;text-decoration:none;margin-bottom:12px;
+}
+.action-btn:active{transform:scale(.98)}
+.action-btn.primary{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 0 30px rgba(255,30,60,.6)}
+.action-btn.secondary{background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--border)}
+
+.hub-foot{text-align:center;margin-top:18px;font-size:.6rem;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#4a5058}
+.hub-foot b{color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="panel">
+    <div class="buzzer">🔔 Final Buzzer</div>
+    <div class="final-title">GAME <span>COMPLETE</span></div>
+
+    <div class="qs-board">
+      <div class="qs-cell"><div class="qs-label">1st</div><div class="qs-val" id="fsQ1">0</div></div>
+      <div class="qs-cell"><div class="qs-label">2nd</div><div class="qs-val" id="fsQ2">0</div></div>
+      <div class="qs-cell"><div class="qs-label">3rd</div><div class="qs-val" id="fsQ3">0</div></div>
+      <div class="qs-cell"><div class="qs-label">4th</div><div class="qs-val" id="fsQ4">0</div></div>
+    </div>
+
+    <div class="total-row">
+      <div class="total-label">Final Score</div>
+      <div class="total-val" id="fsTotal">0</div>
+    </div>
+
+    <a class="action-btn primary" id="playAgainBtn" href="/002-recall.html">🏀 Play Again — All 4 Quarters</a>
+    <a class="action-btn secondary" href="/mobile-lab.html">← Back to the Hub</a>
+
+    <div class="hub-foot">Powered by <b>Gostar Digital</b></div>
+  </div>
+</div>
+<script>
+(function(){
+function loadQuarterScores(){
+  try{return JSON.parse(sessionStorage.getItem('rct-mobile-quarter-scores')||'{"q1":0,"q2":0,"q3":0,"q4":0}')}
+  catch(e){return {q1:0,q2:0,q3:0,q4:0}}
+}
+var scores=loadQuarterScores();
+var total=scores.q1+scores.q2+scores.q3+scores.q4;
+document.getElementById('fsQ1').textContent=scores.q1;
+document.getElementById('fsQ2').textContent=scores.q2;
+document.getElementById('fsQ3').textContent=scores.q3;
+document.getElementById('fsQ4').textContent=scores.q4;
+document.getElementById('fsTotal').textContent=total;
+
+document.getElementById('playAgainBtn').addEventListener('click',function(){
+  sessionStorage.setItem('rct-mobile-fullgame-active','1');
+  sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));
+});
+})();
+</script>
+</body>
+</html>

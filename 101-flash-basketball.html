@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+if (localStorage.getItem('rct-mobile-pass') !== '1') {
+  window.location.replace('index.html');
+}
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Flash Reaction | Ritnome Memory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#ff1e3c;--red-deep:#c8102e;--dark:#0a0a0f;--card:#111118;--text:#fff;--muted:#8892a0;--border:rgba(255,255,255,0.1);--cy:#00e5ff}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overflow:hidden}
+
+#topClock{position:fixed;top:0;left:0;right:0;z-index:21;text-align:center;padding:calc(8px + env(safe-area-inset-top)) 16px 2px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}
+#topClock .clock-label{font-size:.52rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--cy);margin-bottom:1px}
+#topClock .clock-val{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:1px;line-height:1;color:#fff}
+#topClock .clock-val.urgent{color:var(--red);animation:clockPulse .5s ease-in-out infinite}
+@keyframes clockPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+#hud{position:fixed;top:calc(46px + env(safe-area-inset-top));left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:0 16px 8px}
+.hud-box{text-align:center}
+.hud-label{font-size:.55rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:2px}
+.hud-val{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:1px;line-height:1}
+#hScore{color:#fff;font-size:2.1rem}#hLastMs{font-size:1.1rem;color:var(--cy)}#hBest{font-size:1.1rem;color:var(--muted)}
+
+#msg{position:fixed;top:calc(108px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:20;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;text-align:center;pointer-events:none;transition:opacity .2s;width:90%}
+
+/* Live scoreboard — a real, running shot-by-shot record, exactly like
+   a basketball box score fills in as the game happens. Scrolls to the
+   newest chip automatically so the latest result is always visible. */
+#scoreboard{position:fixed;top:calc(138px + env(safe-area-inset-top));left:0;right:0;z-index:15;display:flex;gap:6px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+#scoreboard::-webkit-scrollbar{display:none}
+.shot-chip{flex:0 0 auto;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1rem;font-weight:900;color:#fff}
+.shot-chip.chip-hit{background:rgba(0,229,255,.18);border:1px solid rgba(0,229,255,.4);color:#00e5ff}
+.shot-chip.chip-x{background:rgba(255,30,60,.18);border:1px solid rgba(255,30,60,.4);color:#ff6b7f}
+.shot-chip.chip-new{animation:chipPop .35s ease-out}
+@keyframes chipPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
+.shot-chip.chip-hit.chip-new{animation:chipFlashHit .5s ease-out}
+@keyframes chipFlashHit{
+  0%{transform:scale(.4);opacity:0;box-shadow:0 0 0 rgba(0,229,255,0)}
+  40%{transform:scale(1.4);box-shadow:0 0 30px rgba(0,229,255,1)}
+  100%{transform:scale(1);opacity:1;box-shadow:0 0 14px rgba(0,229,255,.5)}
+}
+
+/* Same chip strip, reused read-only on the end screen and Box Score —
+   smaller, wraps instead of scrolling, since there's no live game
+   happening there to auto-follow. */
+.scoreboard-static{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:320px;margin:10px auto}
+.scoreboard-static .shot-chip{width:19px;height:19px;font-size:.62rem;border-radius:5px}
+#msg.watch{color:var(--red)}#msg.correct{color:#00D9A5}#msg.wrong{color:var(--red)}
+
+/* Stagnant, centered target — never moves. Only the arrow it carries
+   changes, on the beat. */
+#stageWrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:22vh}
+#stimulus{
+  width:34vw;height:34vw;max-width:150px;max-height:150px;min-width:120px;min-height:120px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 32%,#6bfcff,var(--cy) 55%,#00a8c2 85%);
+  box-shadow:0 0 40px rgba(0,229,255,.85),0 0 80px rgba(0,229,255,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:min(14vw,3.2rem);color:#fff;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.6);
+  opacity:0;transform:scale(.6);
+  transition:box-shadow .1s,opacity .12s,transform .12s;
+}
+#stimulus.visible{opacity:1;transform:scale(1)}
+#stimulus.hit{box-shadow:0 0 60px rgba(0,229,255,1),0 0 110px rgba(0,229,255,.6)}
+
+/* Gold arrows — a real SVG shape with a metallic gradient and drop
+   shadow, rotated per direction rather than four separate flat glyphs.
+   One shape, one gradient, perfectly consistent across every direction. */
+.gold-arrow{width:46%;height:46%;filter:drop-shadow(0 3px 4px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(255,200,60,.55));transition:transform .06s}
+.choice-btn .gold-arrow{width:52%;height:52%}
+.dir-up{transform:rotate(0deg)}
+.dir-right{transform:rotate(90deg)}
+.dir-down{transform:rotate(180deg)}
+.dir-left{transform:rotate(270deg)}
+
+#choices{
+  position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:20;
+  display:grid;grid-template-columns:74px 74px 74px;grid-template-rows:64px 64px 64px;gap:8px;
+}
+.choice-btn{border:2px solid rgba(255,30,60,.4);background:rgba(255,30,60,.08);border-radius:14px;color:#fff;display:flex;align-items:center;justify-content:center;transition:all .08s}
+.choice-btn:active{background:rgba(255,30,60,.35);transform:scale(.94)}
+#slot0{grid-column:2;grid-row:1}
+#slot1{grid-column:1;grid-row:2}
+#slot2{grid-column:3;grid-row:2}
+#slot3{grid-column:2;grid-row:3}
+
+#backBtn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:14px;z-index:60;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.7rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;z-index:60}
+
+#screen-intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--dark);padding:24px;text-align:center}
+.vrr-logo{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:3px;text-transform:uppercase;color:#fff;text-shadow:0 0 32px rgba(255,30,60,.7);margin-bottom:4px}
+.vrr-logo span{color:var(--red)}
+.vrr-sub{font-size:.65rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:var(--red);margin-bottom:24px}
+.rule-t{font-size:.88rem;color:#c9ccd3;line-height:1.55;max-width:380px;margin-bottom:26px}
+.rule-t b{color:#fff}
+.big-btn{width:100%;max-width:340px;height:60px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(255,30,60,.6)}
+.best-line{margin-top:16px;font-size:.8rem;color:var(--muted)}
+.best-line b{color:var(--red)}
+.box-open-btn{width:100%;max-width:320px;height:44px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:14px;color:var(--cy);font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:12px}
+
+#screen-end{position:fixed;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--dark);text-align:center;padding:18px 20px;overflow-y:auto}
+.completion-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.completion-badge.complete{background:rgba(0,217,165,.14);border:1px solid rgba(0,217,165,.4);color:#00d9a5}
+.completion-badge.incomplete{background:rgba(255,180,80,.14);border:1px solid rgba(255,180,80,.4);color:#ffb450}
+.final-num{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--red);line-height:1;text-shadow:0 0 50px rgba(255,30,60,.8)}
+.final-label{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.final-acc{margin-top:8px;font-size:.95rem;color:#ff6b7f;font-weight:700}
+.final-avgbpm{margin-top:10px;font-size:1.3rem;font-weight:900;color:var(--cy)}
+.bpm-avg-label{margin-top:10px;font-size:.78rem;color:var(--cy);font-weight:700}
+.bpm-avg-label b{font-weight:900}
+.hear-bpm-btn{margin-top:8px;height:40px;padding:0 20px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.08);border-radius:12px;color:var(--cy);font-size:.76rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.hear-bpm-btn:active{background:rgba(0,229,255,.25);transform:scale(.97)}
+.hear-bpm-btn:disabled{opacity:.4;cursor:default}
+.hear-bpm-btn .beat-dot-ind{width:8px;height:8px;border-radius:50%;background:var(--cy);transition:transform .08s,opacity .08s}
+.hear-bpm-btn .beat-dot-ind.pulse{transform:scale(1.8);opacity:.4}
+.final-misses{margin-top:6px;font-size:1rem;font-weight:900;color:var(--red)}
+.final-misses.clean{color:#00D9A5}
+#screen-end h2{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px;margin:12px 0 5px}
+#endSub{font-size:.8rem;color:var(--muted);line-height:1.4;max-width:320px}
+.next-player-btn{margin-top:14px;height:50px;padding:0 34px;border:none;border-radius:14px;background:linear-gradient(120deg,var(--red),var(--red-deep));color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer}
+
+#screen-box{position:fixed;inset:0;z-index:58;display:none;flex-direction:column;align-items:center;background:var(--dark);padding:calc(60px + env(safe-area-inset-top)) 16px 24px;overflow-y:auto}
+.box-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;text-transform:uppercase;color:#fff}
+.box-title span{color:var(--red)}
+.box-sub{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:20px}
+.box-section{width:100%;max-width:360px;margin-bottom:20px}
+.box-section-label{font-size:.62rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#ff6b7f;margin-bottom:6px;text-align:left;padding-left:4px}
+.box-table{width:100%;border-collapse:collapse;background:rgba(255,30,60,.05);border:1px solid rgba(255,30,60,.25);border-radius:12px;overflow:hidden}
+.box-table th{background:rgba(255,30,60,.16);color:#ff6b7f;font-size:.56rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:7px 4px;text-align:center}
+.box-table td{padding:10px 4px;text-align:center;font-weight:900;font-size:1rem;color:#fff}
+.box-table .box-pts{color:var(--red);font-size:1.25rem}
+.box-empty{color:var(--muted);font-size:.8rem;padding:20px 8px;font-style:italic}
+.box-back-btn{width:100%;max-width:360px;height:50px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font-size:.9rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:4px}
+.box-recent-row{font-size:.72rem;color:var(--muted);padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;cursor:pointer}
+.box-recent-row:last-child{border-bottom:none}
+.box-recent-row:active{background:rgba(255,30,60,.08)}
+.box-recent-row b{color:#ffb400}
+.box-recent-row .expand-hint{color:var(--red);font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
+/* Tap-by-tap — the full, ordered history of a single game, not just
+   its summary numbers. */
+.tap-log{display:flex;flex-wrap:wrap;gap:4px;padding:10px;background:rgba(255,30,60,.05);border:1px solid rgba(255,30,60,.2);border-radius:12px;margin-top:8px}
+.tap-chip{flex:0 0 auto;min-width:40px;padding:4px 5px;border-radius:6px;text-align:center;font-family:'Outfit',sans-serif;font-size:.58rem;font-weight:900;line-height:1.3}
+.tap-chip.hit{background:rgba(0,229,255,.16);border:1px solid rgba(0,229,255,.4);color:var(--cy)}
+.tap-chip.miss{background:rgba(255,30,60,.14);border:1px solid rgba(255,30,60,.35);color:#ff8fa3}
+.tap-chip .tap-pts{display:block;font-size:.62rem}
+.tap-chip .tap-bpm{display:block;opacity:.85;font-size:.54rem;margin-top:1px}
+.tap-log-total{width:100%;text-align:center;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,30,60,.2);font-size:.78rem;font-weight:900;color:#fff}
+.tap-log-total b{color:var(--red);font-size:1rem}
+.tap-log-empty{color:var(--muted);font-size:.72rem;font-style:italic;padding:6px}
+
+#countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:var(--dark)}
+#bigCount{font-family:'Bebas Neue',sans-serif;font-size:7rem;color:var(--red);text-shadow:0 0 50px rgba(255,30,60,.8)}
+</style>
+</head>
+<body>
+
+<!-- Shared gold gradient — defined once, referenced by every arrow
+     instance so the metallic look is perfectly consistent. -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="goldGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#fff6d8"/>
+      <stop offset="30%" stop-color="#ffe27a"/>
+      <stop offset="55%" stop-color="#ffc72c"/>
+      <stop offset="80%" stop-color="#c9911a"/>
+      <stop offset="100%" stop-color="#8a5f0f"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<a id="backBtn" href="mobile-lab.html">← Back</a>
+
+<div id="topClock">
+  <div class="clock-label">Time Left</div>
+  <div class="clock-val" id="hClock">1:00</div>
+</div>
+
+<div id="hud">
+  <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
+  <div class="hud-box"><div class="hud-label">BPM</div><div class="hud-val" id="hLastMs">--</div></div>
+  <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
+</div>
+
+<div id="msg" class="watch"></div>
+<div id="scoreboard"></div>
+
+<div id="stageWrap"><div id="stimulus"><svg class="gold-arrow" id="stimArrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></div></div>
+
+<div id="choices">
+  <button class="choice-btn" id="slot0"><svg class="gold-arrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="slot1"><svg class="gold-arrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="slot2"><svg class="gold-arrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+  <button class="choice-btn" id="slot3"><svg class="gold-arrow" viewBox="0 0 100 100"><path d="M50,10 L88,52 L66,52 L66,90 L34,90 L34,52 L12,52 Z" fill="url(#goldGrad)" stroke="#6b4a08" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+</div>
+
+<!-- INTRO -->
+<div id="screen-intro">
+  <div class="vrr-logo">FLASH <span>REACTION</span></div>
+  <div class="vrr-sub">Ritnome Memory · Reaction Speed</div>
+  <div class="rule-t"><b>60 seconds.</b> The target flashes once, at 120 BPM, then goes blank — no new target appears until you respond, right or wrong, or 3 full seconds pass. Read it and tap the matching direction. Every correct tap is scored on real speed — the faster you are, the more points you earn. A wrong direction or no response earns nothing, but costs you nothing either. How many points can you rack up before the clock runs out?</div>
+  <button class="big-btn" id="bigStart" onclick="startDrill()">START</button>
+  <div class="best-line" id="bestLine"></div>
+  <button class="box-open-btn" id="openBoxBtn">📊 BOX SCORE</button>
+</div>
+
+<!-- BOX SCORE -->
+<div id="screen-box">
+  <div class="box-title">BOX <span>SCORE</span></div>
+  <div class="box-sub">Flash Reaction · Career Stats</div>
+
+  <div class="box-section">
+    <div class="box-section-label">Last Game</div>
+    <table class="box-table">
+      <thead><tr><th>PTS</th><th>FG</th><th>FG%</th><th>AVG BPM</th><th>MISS</th></tr></thead>
+      <tbody><tr>
+        <td class="box-pts" id="boxLastPts">--</td>
+        <td id="boxLastFg">--</td>
+        <td id="boxLastFgPct">--</td>
+        <td id="boxLastBpm">--</td>
+        <td id="boxLastMiss">--</td>
+      </tr></tbody>
+    </table>
+    <div class="tap-log" id="lastGameTapLog"></div>
+  </div>
+
+  <div class="box-section">
+    <div class="box-section-label">Career</div>
+    <table class="box-table">
+      <thead><tr><th>GP</th><th>PPG</th><th>FG%</th><th>HIGH</th><th>AVG BPM</th><th>MISS/G</th></tr></thead>
+      <tbody><tr>
+        <td id="boxGP">--</td>
+        <td class="box-pts" id="boxPPG">--</td>
+        <td id="boxCareerFgPct">--</td>
+        <td id="boxHigh">--</td>
+        <td id="boxCareerBpm">--</td>
+        <td id="boxCareerMiss">--</td>
+      </tr></tbody>
+    </table>
+  </div>
+
+  <div class="box-section">
+    <div class="box-section-label">Recent Games</div>
+    <div class="box-table" id="boxRecentList" style="border-radius:12px"></div>
+    <div class="tap-log" id="recentGameTapLog" style="display:none"></div>
+  </div>
+
+  <button class="box-back-btn" id="closeBoxBtn">← Back</button>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countdown"><div id="bigCount">3</div></div>
+
+<!-- END -->
+<div id="screen-end">
+  <div class="completion-badge" id="endCompletion">50/50 TARGETS</div>
+  <div class="final-num" id="endNum">0</div>
+  <div class="final-label">Score</div>
+  <div class="final-acc" id="endAcc"></div>
+  <div class="final-misses" id="endMisses"></div>
+  <div class="scoreboard-static" id="endScoreboard"></div>
+  <div class="bpm-avg-label" id="bpmAvgLabel" style="display:none"></div>
+  <button class="hear-bpm-btn" id="hearBpmBtn" style="display:none"><span class="beat-dot-ind" id="beatDotInd"></span> Hear Your Ritnome</button>
+  <h2 id="endHead">Drill Complete!</h2>
+  <div id="endSub">Great taps. Beat this number next time!</div>
+  <button class="next-player-btn" id="nextPlayerBtn">Next Player</button>
+  <button class="box-open-btn" id="openBoxBtnEnd">📊 BOX SCORE</button>
+  <a id="endBackBtn" href="mobile-lab.html" style="margin-top:14px;color:var(--muted);font-size:.75rem;text-decoration:none">← Back to Ritnome Memory</a>
+</div>
+
+<script>
+var RESPONSE_TIMEOUT_MS=3000; // the only condition under which a new
+// target ever appears without a response — a genuine 3-second window.
+// No new flash happens until either a real response (right or wrong)
+// or this full window has elapsed.
+var FLASH_BPM=120; // how long the target actually stays visible before
+// going blank — a real flash-then-recall test, not just "react to
+// something you're already staring at."
+var FLASH_MS=Math.round(60000/FLASH_BPM);
+var CONTEST_MS=60000; // how many points can you rack up in a minute —
+// the clock is the only thing that ends this format, not a round count.
+var BEST_KEY='rct-101flash-best';
+var BOX_KEY='rct-101flash-boxscore';
+
+function $(id){return document.getElementById(id)}
+function bpmFromMs(v){return v?Math.round(60000/v):0}
+
+var phase='idle';
+var idx=0,best=0,correctCount=0,misses=0,totalRT=0,rtCount=0,shownAt=0;
+var score=0,shotLog=[]; // score is a running total of real, speed-
+// sensitive points — the faster the tap, the more it's worth. shotLog
+// is the full, ordered history of every round's outcome — hit or
+// miss, with the exact BPM and points each one earned — driving the
+// on-screen live scoreboard and carrying through to the Box Score.
+var lastAvgBpm=0,beatPreviewPlaying=false;
+var currentSide=null,awaitingResponse=false;
+var roundTimer=null,flashTimer=null;
+var stimulus=$('stimulus');
+var stimArrow=$('stimArrow');
+var DIR_DEG={left:270,right:90,up:0,down:180};
+var DIRS=['left','right','up','down'];
+
+function loadBest(){
+  best=0;
+  try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
+  $('hBest').textContent=best;
+  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' pts</b>'):'';
+}
+function saveBest(){try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
+
+function loadBoxData(){
+  try{
+    var raw=localStorage.getItem(BOX_KEY);
+    if(raw)return JSON.parse(raw);
+  }catch(e){}
+  return {gp:0,totalPts:0,totalMade:0,totalAttempts:0,totalMs:0,totalMisses:0,high:0,recent:[]};
+}
+function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
+function pct(made,attempts){return attempts>0?Math.round((made/attempts)*100)+'%':'--'}
+
+function recordGameToBoxScore(finalScore,made,attempts,avgMs,missCount,shots){
+  var d=loadBoxData();
+  // safe upgrade for any box score saved under an earlier version of this system
+  if(typeof d.totalPts!=='number')d.totalPts=(typeof d.totalScore==='number')?d.totalScore:0;
+  if(typeof d.totalMisses!=='number')d.totalMisses=0;
+  d.gp++;
+  d.totalPts+=finalScore;
+  d.totalMade+=made;
+  d.totalAttempts+=attempts;
+  d.totalMs+=avgMs;
+  d.totalMisses+=missCount;
+  if(finalScore>d.high)d.high=finalScore;
+  d.recent.unshift({pts:finalScore,made:made,attempts:attempts,ms:avgMs,miss:missCount,date:new Date().toLocaleDateString(),shots:shots||[]});
+  if(d.recent.length>8)d.recent=d.recent.slice(0,8);
+  saveBoxData(d);
+  return d;
+}
+
+// Renders one game's full tap-by-tap history into a container — a
+// real, ordered record of every hit and miss with its own BPM and
+// point value, plus the game's actual final total.
+function renderTapLog(container,shots,finalScore){
+  if(!shots||!shots.length){
+    container.innerHTML='<div class="tap-log-empty">No tap-by-tap detail saved for this game.</div>';
+    return;
+  }
+  var chips=shots.map(function(s){
+    if(s.hit){
+      return '<div class="tap-chip hit"><span class="tap-pts">+'+s.pts+'</span><span class="tap-bpm">'+s.bpm+' BPM</span></div>';
+    }
+    var label=s.noResponse?'NO RESP':(s.bpm>0?s.bpm+' BPM':'MISS');
+    return '<div class="tap-chip miss"><span class="tap-pts">0</span><span class="tap-bpm">'+label+'</span></div>';
+  }).join('');
+  container.innerHTML=chips+'<div class="tap-log-total">Final Total: <b>'+finalScore+' PTS</b></div>';
+}
+
+function renderBoxScore(lastGame){
+  var d=loadBoxData();
+  if(typeof d.totalPts!=='number')d.totalPts=(typeof d.totalScore==='number')?d.totalScore:0;
+  if(typeof d.totalMisses!=='number')d.totalMisses=0;
+
+  var lastShots=null,lastFinalScore=0;
+  var l=lastGame||(d.recent.length?d.recent[0]:null);
+  if(l){
+    $('boxLastPts').textContent=l.pts;
+    $('boxLastFg').textContent=l.made+'-'+l.attempts;
+    $('boxLastFgPct').textContent=pct(l.made,l.attempts);
+    $('boxLastBpm').textContent=l.ms>0?bpmFromMs(l.ms)+' BPM':'--';
+    $('boxLastMiss').textContent=(typeof l.miss==='number')?l.miss:'--';
+    lastShots=l.shots;lastFinalScore=l.pts;
+  }else{
+    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastBpm').textContent='--';$('boxLastMiss').textContent='--';
+  }
+  renderTapLog($('lastGameTapLog'),lastShots,lastFinalScore);
+
+  $('boxGP').textContent=d.gp;
+  $('boxPPG').textContent=d.gp>0?(d.totalPts/d.gp).toFixed(1):'--';
+  $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
+  $('boxHigh').textContent=d.high>0?d.high:'--';
+  $('boxCareerBpm').textContent=d.gp>0?bpmFromMs(Math.round(d.totalMs/d.gp))+' BPM':'--';
+  $('boxCareerMiss').textContent=d.gp>0?(d.totalMisses/d.gp).toFixed(1):'--';
+
+  var listEl=$('boxRecentList');
+  var tapLogEl=$('recentGameTapLog');
+  tapLogEl.style.display='none';
+  var openRowIdx=-1;
+  if(!d.recent.length){
+    listEl.innerHTML='<div class="box-empty">No games yet — play a round to start your box score.</div>';
+  }else{
+    listEl.innerHTML=d.recent.map(function(g,i){
+      var missText=(typeof g.miss==='number')?(' · '+g.miss+' miss'+(g.miss===1?'':'es')):'';
+      return '<div class="box-recent-row" data-idx="'+i+'"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' ('+pct(g.made,g.attempts)+') · '+bpmFromMs(g.ms)+' BPM'+missText+'<span class="expand-hint">tap for detail</span></span></div>';
+    }).join('');
+    listEl.querySelectorAll('.box-recent-row').forEach(function(row){
+      row.addEventListener('click',function(){
+        var idx=parseInt(row.dataset.idx,10);
+        if(openRowIdx===idx){
+          tapLogEl.style.display='none';
+          openRowIdx=-1;
+          return;
+        }
+        openRowIdx=idx;
+        var g=d.recent[idx];
+        renderTapLog(tapLogEl,g.shots,g.pts);
+        tapLogEl.style.display='flex';
+        row.insertAdjacentElement('afterend',tapLogEl);
+      });
+    });
+  }
+}
+var boxReturnScreen='screen-intro';
+$('openBoxBtn').onclick=function(){boxReturnScreen='screen-intro';renderBoxScore(window.__lastGameBox?window.__lastGameBox.recent[0]:null);$('screen-intro').style.display='none';$('screen-box').style.display='flex';};
+$('openBoxBtnEnd').onclick=function(){boxReturnScreen='screen-end';renderBoxScore(window.__lastGameBox?window.__lastGameBox.recent[0]:null);$('screen-end').style.display='none';$('screen-box').style.display='flex';};
+$('closeBoxBtn').onclick=function(){$('screen-box').style.display='none';document.getElementById(boxReturnScreen).style.display='flex';};
+
+function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
+
+function startDrill(){
+  if(phase==='running')return;
+  $('screen-intro').style.display='none';
+  $('countdown').style.display='flex';
+  var n=3;$('bigCount').textContent=n;
+  var iv=setInterval(function(){
+    n--;
+    if(n<=0){clearInterval(iv);$('countdown').style.display='none';runDrill()}
+    else{$('bigCount').textContent=n}
+  },700);
+}
+
+var contestTimerInterval=null,contestEndAt=0;
+function runDrill(){
+  phase='running';idx=0;correctCount=0;misses=0;totalRT=0;rtCount=0;score=0;shotLog=[];
+  $('hScore').textContent='0';$('hLastMs').textContent='--';
+  $('scoreboard').innerHTML='';
+  stimulus.classList.add('visible');
+
+  contestEndAt=performance.now()+CONTEST_MS;
+  updateContestClock();
+  clearInterval(contestTimerInterval);
+  contestTimerInterval=setInterval(function(){
+    updateContestClock();
+    if(performance.now()>=contestEndAt){
+      clearInterval(contestTimerInterval);
+      endDrill();
+    }
+  },100);
+
+  nextTarget();
+}
+function updateContestClock(){
+  var remainMs=Math.max(0,contestEndAt-performance.now());
+  var totalSec=Math.ceil(remainMs/1000);
+  var m=Math.floor(totalSec/60);
+  var s=totalSec%60;
+  var el=$('hClock');
+  el.textContent=m+':'+(s<10?'0':'')+s;
+  el.className='clock-val'+(totalSec<=10?' urgent':'');
+}
+
+// Renders a full shot log into any container — used for the live
+// strip during play, and again read-only on the end screen.
+function renderScoreboard(container,log){
+  if(!container)return;
+  container.innerHTML=log.map(function(s){
+    if(s.hit)return '<div class="shot-chip chip-hit">'+s.bpm+'</div>';
+    return '<div class="shot-chip chip-x">X</div>';
+  }).join('');
+}
+function pushShotChip(entry){
+  shotLog.push(entry);
+  var board=$('scoreboard');
+  if(!board)return;
+  var chip=document.createElement('div');
+  chip.className='shot-chip '+(entry.hit?'chip-hit':'chip-x')+' chip-new';
+  chip.textContent=entry.hit?entry.bpm:'X';
+  board.appendChild(chip);
+  board.scrollLeft=board.scrollWidth;
+}
+
+// Open-ended per round: the target waits for a real tap and scores on
+// how fast that tap actually was. No fixed beat forcing a response by
+// a specific instant — the only timing pressure is the generous
+// safety-net deadline below, so a miss always means a genuine miss,
+// not just bad luck on when the beat happened to land.
+function nextTarget(){
+  if(phase!=='running')return;
+  idx++;
+
+  awaitingResponse=true;
+  // Never repeat the direction that just showed — pick randomly from
+  // the other three instead of all four, so every round is guaranteed
+  // to actually change, not just usually change.
+  var pool=DIRS.filter(function(d){return d!==currentSide});
+  currentSide=pool[Math.floor(Math.random()*pool.length)];
+  stimArrow.style.transform='rotate('+DIR_DEG[currentSide]+'deg)';
+  stimulus.classList.add('visible');
+  shownAt=performance.now();
+  shuffleButtonLayout();
+
+  // A real flash, not a continuous stare — the target shows for one
+  // beat at 120 BPM, then goes blank while the response window stays
+  // fully open. Tapping is valid the whole time, both during the
+  // brief flash and through the blank period after — this tests
+  // reading-and-recalling under real time pressure, not just reacting
+  // to something already sitting in front of you.
+  clearTimeout(flashTimer);
+  flashTimer=setTimeout(function(){
+    stimulus.classList.remove('visible');
+  },FLASH_MS);
+
+  clearTimeout(roundTimer);
+  roundTimer=setTimeout(handleTimeout,RESPONSE_TIMEOUT_MS);
+}
+
+// Re-randomizes which direction lives in which of the four fixed
+// screen positions, every single round. The physical slots never
+// move — the cross stays a cross, thumb-reachable and predictable —
+// but which arrow is IN each slot changes every time, so there's no
+// "top button = up" muscle memory to fall back on. Reading both the
+// target and the buttons is required on every single tap.
+var SLOT_IDS=['slot0','slot1','slot2','slot3'];
+function shuffleButtonLayout(){
+  var shuffled=DIRS.slice();
+  for(var i=shuffled.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=shuffled[i];shuffled[i]=shuffled[j];shuffled[j]=tmp;
+  }
+  SLOT_IDS.forEach(function(slotId,i){
+    var dir=shuffled[i];
+    var btn=$(slotId);
+    btn.dataset.dir=dir;
+    var svg=btn.querySelector('svg');
+    svg.style.transform='rotate('+DIR_DEG[dir]+'deg)';
+  });
+}
+
+function handleTimeout(){
+  if(phase!=='running'||!awaitingResponse)return;
+  awaitingResponse=false;
+  clearTimeout(flashTimer);
+  stimulus.classList.remove('visible');
+  // A miss — zero, same as any missed shot — but the drill keeps
+  // going regardless, since the 60-second clock is the only thing
+  // that ever ends this format now.
+  misses++;
+  pushShotChip({hit:false,bpm:0,pts:0,noResponse:true});
+  $('hLastMs').textContent='No response';
+  flashWrong();
+  msg('✗ NO RESPONSE (0)','wrong');
+  $('hScore').textContent=score;
+  nextTarget();
+}
+
+function flashWrong(){
+  stimulus.classList.add('hit');
+  setTimeout(function(){stimulus.classList.remove('hit')},100);
+}
+
+function handleChoice(side){
+  if(phase!=='running'||!awaitingResponse)return;
+  awaitingResponse=false;
+  clearTimeout(roundTimer);
+  clearTimeout(flashTimer);
+  stimulus.classList.remove('visible');
+
+  if(side===currentSide){
+    var rt=performance.now()-shownAt;
+    var bpm=bpmFromMs(rt);
+    // Speed-sensitive scoring: 300 points at an instant tap, decaying
+    // down to exactly 1 point at 30 BPM (2000ms) — the faster you are,
+    // the more it's worth, same formula as Basketball Flash Reaction.
+    var tapPts=Math.max(1,Math.round(300-rt/6.689));
+    correctCount++;
+    score+=tapPts;
+    totalRT+=rt;rtCount++;
+    pushShotChip({hit:true,bpm:bpm,pts:tapPts});
+    $('hLastMs').textContent=bpm;
+    stimulus.classList.add('hit');
+    setTimeout(function(){stimulus.classList.remove('hit')},100);
+    msg(bpm+' BPM · +'+tapPts+' PTS','correct');
+  }else{
+    // A wrong direction earns nothing, but costs nothing either.
+    var wrongRt=performance.now()-shownAt;
+    misses++;
+    pushShotChip({hit:false,bpm:bpmFromMs(wrongRt),pts:0,noResponse:false});
+    flashWrong();
+    msg('✗ MISS (0 PTS)','wrong');
+  }
+  $('hScore').textContent=score;
+  nextTarget();
+}
+
+// Each slot's own click handler reads whichever direction is CURRENTLY
+// assigned to it at the moment of the tap, rather than a fixed
+// direction baked into the button itself — since that assignment
+// changes every round.
+['slot0','slot1','slot2','slot3'].forEach(function(id){
+  $(id).addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    handleChoice(this.dataset.dir);
+  });
+});
+
+function endDrill(){
+  if(phase==='done')return;
+  // If the clock runs out while a target is still actively on screen
+  // awaiting a response, that round must never just vanish from the
+  // tally — the player saw it and didn't get to respond in time,
+  // which is a real miss, exactly like any other no-response.
+  if(awaitingResponse){
+    awaitingResponse=false;
+    misses++;
+    pushShotChip({hit:false,bpm:0,pts:0,noResponse:true});
+  }
+  phase='done';clearTimeout(roundTimer);clearTimeout(flashTimer);clearInterval(contestTimerInterval);
+  stimulus.classList.remove('visible');
+  // Score is the running point total — every correct tap adds real,
+  // speed-sensitive points, every miss adds nothing. The number people
+  // see is the exact same number that was climbing on screen the
+  // whole game.
+  var finalScore=score;
+  var attempts=correctCount+misses;
+  var accPct=attempts>0?Math.round((correctCount/attempts)*100):0;
+  var avgRT=rtCount?Math.round(totalRT/rtCount):0;
+  var isNewBest=finalScore>best;
+  if(isNewBest){best=finalScore;saveBest()}
+
+  $('endNum').textContent=finalScore;
+  $('endCompletion').textContent=correctCount+' HITS IN 60 SECONDS';
+  $('endCompletion').className='completion-badge complete';
+  $('endAcc').textContent=correctCount+'/'+attempts+' correct · '+accPct+'% accuracy';
+  $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES');
+  $('endMisses').className='final-misses'+(misses===0?' clean':'');
+  lastAvgBpm=avgRT>0?bpmFromMs(avgRT):0;
+  $('hearBpmBtn').style.display=lastAvgBpm>0?'inline-flex':'none';
+  $('bpmAvgLabel').innerHTML=lastAvgBpm>0?('Your Ritnome BPM Average: <b>'+lastAvgBpm+' BPM</b>'):'';
+  $('bpmAvgLabel').style.display=lastAvgBpm>0?'block':'none';
+
+  if(isNewBest&&finalScore>0){
+    $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points!';
+  }else{
+    $('endHead').textContent="Time's Up!";$('endSub').textContent='Great taps. Beat this number next time!';
+  }
+
+  window.__lastGameBox=recordGameToBoxScore(finalScore,correctCount,attempts,avgRT,misses,shotLog);
+
+  $('screen-end').style.display='flex';
+  renderScoreboard($('endScoreboard'),shotLog);
+}
+
+$('nextPlayerBtn').onclick=function(){$('screen-end').style.display='none';startDrill()};
+
+// "Hear Your Ritnome" — plays 10 real drum beats at the player's own
+// average BPM, so a number like "184 BPM" becomes something they can
+// actually feel, not just read. Same kick-drum synthesis style used
+// elsewhere in Ritnome/Hooporia — a quick pitch drop plus a fast decay.
+var beatAudioCtx=null;
+function getBeatAC(){if(!beatAudioCtx){try{beatAudioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return beatAudioCtx}
+function playPreviewDrum(){
+  var c=getBeatAC();if(!c)return;
+  try{
+    if(c.state==='suspended')c.resume();
+
+    // Main body — a low, punchy pitch-drop, same shape as before but
+    // significantly louder (0.35 -> 0.85 peak gain, close to full
+    // headroom without risking clipping).
+    var o=c.createOscillator(),g=c.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(150,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(45,c.currentTime+0.12);
+    g.gain.setValueAtTime(0.85,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.2);
+    o.connect(g);g.connect(c.destination);
+    o.start();o.stop(c.currentTime+0.22);
+
+    // A very short, sharp attack transient layered on top of the main
+    // hit — real drum hits have a percussive "click" at the instant of
+    // impact, not just the low body. This makes the beat read as
+    // louder and punchier without needing to push the low end even
+    // further, which risks muddiness rather than clarity.
+    var o2=c.createOscillator(),g2=c.createGain();
+    o2.type='triangle';
+    o2.frequency.setValueAtTime(900,c.currentTime);
+    o2.frequency.exponentialRampToValueAtTime(200,c.currentTime+0.03);
+    g2.gain.setValueAtTime(0.5,c.currentTime);
+    g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.045);
+    o2.connect(g2);g2.connect(c.destination);
+    o2.start();o2.stop(c.currentTime+0.05);
+  }catch(e){}
+}
+
+$('hearBpmBtn').addEventListener('click',function(){
+  if(beatPreviewPlaying||lastAvgBpm<=0)return;
+  beatPreviewPlaying=true;
+  var btn=$('hearBpmBtn'),dot=$('beatDotInd');
+  btn.disabled=true;
+  var beatMs=Math.round(60000/lastAvgBpm);
+  var count=0;
+  function tick(){
+    if(count>=10){
+      beatPreviewPlaying=false;
+      btn.disabled=false;
+      return;
+    }
+    playPreviewDrum();
+    dot.classList.add('pulse');
+    setTimeout(function(){dot.classList.remove('pulse')},Math.min(140,beatMs*0.3));
+    count++;
+    setTimeout(tick,beatMs);
+  }
+  tick();
+});
+
+loadBest();
+</script>
+</body>
+</html>

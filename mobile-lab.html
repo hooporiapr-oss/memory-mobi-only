@@ -24,8 +24,7 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
   #hub{position:relative;z-index:10;min-height:100dvh;padding:calc(28px + env(safe-area-inset-top)) 18px calc(30px + env(safe-area-inset-bottom))}
   .hub-head{text-align:center;margin-bottom:26px}
   .hub-kicker{font-size:.66rem;font-weight:900;letter-spacing:.4em;text-transform:uppercase;color:var(--red);margin-bottom:8px;text-shadow:0 0 20px rgba(255,30,60,.8)}
-  .hub-brand{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 32px rgba(255,30,60,.7);line-height:1}
-  .hub-tag{font-size:.68rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#ff6b7f;margin-top:5px}
+  .hub-brand-img{width:100%;max-width:340px;border-radius:14px;box-shadow:0 0 30px rgba(255,30,60,.35);display:block;margin:0 auto}
   .hub-sub{font-size:.7rem;color:var(--muted);margin-top:10px}
   .game-list{display:flex;flex-direction:column;gap:12px;max-width:440px;margin:0 auto}
   .game-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;text-decoration:none;color:var(--text);transition:all .15s;position:relative;overflow:hidden}
@@ -51,9 +50,8 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
 <button id="sound-toggle" onclick="toggleSound()" aria-label="Toggle sound" title="Toggle beat">🔊</button>
 <div id="hub">
   <div class="hub-head">
-    <div class="hub-kicker">🧠 Ritnome Memory</div>
-    <div class="hub-brand">RITNOME</div>
-    <div class="hub-tag">Ritnome Memory · To The Beat</div>
+    <div class="hub-kicker">🧠 Basketball Memory</div>
+    <img class="hub-brand-img" src="ready.png" alt="Are You Ready?">
     <div class="hub-sub">Choose your challenge</div>
   </div>
   <div class="game-list">

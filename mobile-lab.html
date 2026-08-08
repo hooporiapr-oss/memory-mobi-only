@@ -27,6 +27,13 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
   .hub-brand-img{width:100%;max-width:340px;border-radius:14px;box-shadow:0 0 30px rgba(255,30,60,.35);display:block;margin:0 auto}
   .hub-sub{font-size:.7rem;color:var(--muted);margin-top:10px}
   .game-list{display:flex;flex-direction:column;gap:12px;max-width:440px;margin:0 auto}
+  .fullgame-btn{
+    display:block;max-width:440px;margin:0 auto 18px;padding:16px 18px;border-radius:14px;
+    background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;text-decoration:none;
+    text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1.5px;
+    text-transform:uppercase;box-shadow:0 0 30px rgba(255,30,60,.5);
+  }
+  .fullgame-btn:active{transform:scale(.98)}
   .game-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;text-decoration:none;color:var(--text);transition:all .15s;position:relative;overflow:hidden}
   .game-card:active{transform:scale(.98);border-color:var(--red)}
   .game-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red)}
@@ -51,9 +58,10 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
 <div id="hub">
   <div class="hub-head">
     <div class="hub-kicker">🧠 Basketball Memory</div>
-    <img class="hub-brand-img" src="ready-02.png" alt="Are You Ready?">
+    <img class="hub-brand-img" src="ready.png" alt="Are You Ready?">
     <div class="hub-sub">Choose your challenge</div>
   </div>
+  <a class="fullgame-btn" id="fullGameBtn" href="/002-recall.html" onclick="sessionStorage.setItem('rct-mobile-fullgame-active','1');sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));">🏀 PLAY THE FULL GAME — ALL 4 QUARTERS</a>
   <div class="game-list">
     <a class="game-card" href="/101-flash-basketball.html">
       <div class="game-num">01</div>

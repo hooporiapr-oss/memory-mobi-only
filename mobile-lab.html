@@ -49,6 +49,24 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
   .footer-links{font-size:.58rem;font-weight:700;letter-spacing:.04em;color:#6a7078;margin-top:4px}
   .footer-links a{color:#8892a0;text-decoration:none}
   .footer-links a:hover{color:var(--red);text-decoration:underline}
+
+  /* The Handle — a genuinely different kind of memory challenge from
+     the 4-quarter arena below (fixed 5-ball, fixed-tempo, endless
+     escalation rather than a set structure), so it gets its own card
+     above the quarters instead of blending into that list as a 5th
+     option. Purple accent keeps it visually distinct from this
+     page's red theme while still reading as part of the same family. */
+  .handle-label{font-size:.6rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#8892a0;margin:2px 0 10px;text-align:center}
+  .handle-card{
+    display:block;max-width:440px;margin:0 auto 18px;padding:16px 18px;
+    border-radius:14px;text-decoration:none;color:var(--text);
+    background:linear-gradient(135deg,rgba(124,58,237,.16),rgba(168,85,247,.1));
+    border:1.5px solid rgba(124,58,237,.45);
+  }
+  .handle-card:active{transform:scale(.98)}
+  .handle-card-tag{font-family:'Bebas Neue',sans-serif;font-size:.66rem;letter-spacing:2px;color:#c9a3fa;margin-bottom:4px}
+  .handle-card-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#fff}
+  .handle-card-desc{font-size:.68rem;color:var(--muted);margin-top:4px}
 </style>
 </head>
 <body>
@@ -65,6 +83,14 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
     <div class="game-info"><div class="game-name">FLASH TIPOFF</div><div class="game-desc">Read the direction before it's gone — 60 second speed contest</div></div>
     <div class="game-arrow">&rarr;</div>
   </a>
+
+  <div class="handle-label">Featured Challenge</div>
+  <a class="handle-card" href="/mobile-the-handle.html">
+    <div class="handle-card-tag">MEMORY &middot; RHYTHM</div>
+    <div class="handle-card-name">THE HANDLE</div>
+    <div class="handle-card-desc">Watch a sequence of balls light up, then repeat it exactly. Every round adds one more.</div>
+  </a>
+
   <a class="fullgame-btn" id="fullGameBtn" href="/002-recall.html" onclick="sessionStorage.setItem('rct-mobile-fullgame-active','1');sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));">🏀 PLAY THE FULL GAME — ALL 4 QUARTERS</a>
   <div class="game-list">
     <a class="game-card" href="/002-recall.html">

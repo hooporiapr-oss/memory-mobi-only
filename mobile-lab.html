@@ -26,9 +26,9 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
   .hub-kicker{font-size:.66rem;font-weight:900;letter-spacing:.4em;text-transform:uppercase;color:var(--red);margin-bottom:8px;text-shadow:0 0 20px rgba(255,30,60,.8)}
   .hub-brand-img{width:100%;max-width:340px;border-radius:14px;box-shadow:0 0 30px rgba(255,30,60,.35);display:block;margin:0 auto}
   .hub-sub{font-size:.7rem;color:var(--muted);margin-top:10px}
-  .game-list{display:flex;flex-direction:column;gap:12px;max-width:440px;margin:0 auto}
+  .game-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:440px;margin:0 auto}
   .fullgame-btn{
-    display:block;max-width:440px;margin:0 auto 18px;padding:16px 18px;border-radius:14px;
+    display:block;max-width:440px;margin:18px auto 0;padding:16px 18px;border-radius:14px;
     background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;text-decoration:none;
     text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1.5px;
     text-transform:uppercase;box-shadow:0 0 30px rgba(255,30,60,.5);
@@ -42,6 +42,16 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
   .game-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#fff}
   .game-desc{font-size:.68rem;color:var(--muted);margin-top:2px}
   .game-arrow{color:var(--red);font-size:1.2rem}
+
+  /* The 4 quarter cards get their own compact, vertical card style —
+     built for a 2-column grid, distinct from .game-card above (which
+     Flash Tipoff still uses, full-width with a horizontal layout). */
+  .quarter-card{display:block;padding:14px 12px;background:var(--card);border:1px solid var(--border);border-radius:14px;text-decoration:none;color:var(--text);transition:all .15s;position:relative;overflow:hidden}
+  .quarter-card:active{transform:scale(.97);border-color:var(--red)}
+  .quarter-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red)}
+  .quarter-num{font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:var(--red);letter-spacing:1px;margin-bottom:2px}
+  .quarter-name{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:1.5px;color:#fff;line-height:1.1}
+  .quarter-desc{font-size:.64rem;color:var(--muted);margin-top:4px;line-height:1.3}
   .hub-foot{text-align:center;margin-top:28px;font-size:.6rem;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#4a5058}
   .hub-foot b{color:var(--muted);font-style:italic}
   #site-footer{text-align:center;margin-top:14px;padding-bottom:8px}
@@ -91,29 +101,29 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
     <div class="handle-card-desc">Watch a sequence of balls light up, then repeat it exactly. Every round adds one more.</div>
   </a>
 
-  <a class="fullgame-btn" id="fullGameBtn" href="/002-recall.html" onclick="sessionStorage.setItem('rct-mobile-fullgame-active','1');sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));">🏀 PLAY THE FULL GAME — ALL 4 QUARTERS</a>
   <div class="game-list">
-    <a class="game-card" href="/002-recall.html">
-      <div class="game-num">Q1</div>
-      <div class="game-info"><div class="game-name">RECALL</div><div class="game-desc">Watch &middot; Remember &middot; Tap in order</div></div>
-      <div class="game-arrow">&rarr;</div>
+    <a class="quarter-card" href="/002-recall.html">
+      <div class="quarter-num">Q1</div>
+      <div class="quarter-name">RECALL</div>
+      <div class="quarter-desc">Watch &middot; Remember &middot; Tap in order</div>
     </a>
-    <a class="game-card" href="/003-reflex.html">
-      <div class="game-num">Q2</div>
-      <div class="game-info"><div class="game-name">REFLEX</div><div class="game-desc">Fast reflexes to the beat</div></div>
-      <div class="game-arrow">&rarr;</div>
+    <a class="quarter-card" href="/003-reflex.html">
+      <div class="quarter-num">Q2</div>
+      <div class="quarter-name">REFLEX</div>
+      <div class="quarter-desc">Fast reflexes to the beat</div>
     </a>
-    <a class="game-card" href="/004-replay.html">
-      <div class="game-num">Q3</div>
-      <div class="game-info"><div class="game-name">REPLAY</div><div class="game-desc">Repeat the sequence</div></div>
-      <div class="game-arrow">&rarr;</div>
+    <a class="quarter-card" href="/004-replay.html">
+      <div class="quarter-num">Q3</div>
+      <div class="quarter-name">REPLAY</div>
+      <div class="quarter-desc">Repeat the sequence</div>
     </a>
-    <a class="game-card" href="/005-recognition.html">
-      <div class="game-num">Q4</div>
-      <div class="game-info"><div class="game-name">RECOGNITION</div><div class="game-desc">Watch, echo, spot the change</div></div>
-      <div class="game-arrow">&rarr;</div>
+    <a class="quarter-card" href="/005-recognition.html">
+      <div class="quarter-num">Q4</div>
+      <div class="quarter-name">RECOGNITION</div>
+      <div class="quarter-desc">Watch, echo, spot the change</div>
     </a>
   </div>
+  <a class="fullgame-btn" id="fullGameBtn" href="/002-recall.html" onclick="sessionStorage.setItem('rct-mobile-fullgame-active','1');sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));">🏀 PLAY THE FULL GAME — ALL 4 QUARTERS</a>
   <div class="hub-foot">Powered by <b>Gostar Digital</b></div>
   <div id="site-footer">
     <div class="footer-copy">© Copyright Gostar Digital LLC. All Rights Reserved.</div>

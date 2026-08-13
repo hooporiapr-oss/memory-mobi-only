@@ -34,14 +34,6 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
     text-transform:uppercase;box-shadow:0 0 30px rgba(255,30,60,.5);
   }
   .fullgame-btn:active{transform:scale(.98)}
-  .game-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;text-decoration:none;color:var(--text);transition:all .15s;position:relative;overflow:hidden}
-  .game-card:active{transform:scale(.98);border-color:var(--red)}
-  .game-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red)}
-  .game-num{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--red);min-width:42px;text-align:center;letter-spacing:1px}
-  .game-info{flex:1}
-  .game-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#fff}
-  .game-desc{font-size:.68rem;color:var(--muted);margin-top:2px}
-  .game-arrow{color:var(--red);font-size:1.2rem}
 
   /* The 4 quarter cards get their own compact, vertical card style —
      built for a 2-column grid, distinct from .game-card above (which
@@ -89,10 +81,6 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
     <img class="hub-brand-img" src="ready.png" alt="Are You Ready?">
     <div class="hub-sub">Choose your challenge</div>
   </div>
-  <a class="game-card" href="/101-flash-basketball.html" style="max-width:440px;margin:0 auto 12px;display:flex">
-    <div class="game-info"><div class="game-name">FLASH TIPOFF</div><div class="game-desc">Read the direction before it's gone — 60 second speed contest</div></div>
-    <div class="game-arrow">&rarr;</div>
-  </a>
 
   <div class="handle-label">Featured Challenge</div>
   <a class="handle-card" href="/mobile-the-handle.html">

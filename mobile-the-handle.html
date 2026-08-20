@@ -382,8 +382,8 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <div class="challenge-stats" id="challengeStats"></div>
 <button class="challenge-retry-btn" id="retryBtn">TRY AGAIN!</button>
 <div style="display:flex;gap:12px;margin-top:14px">
-<button class="setup-stats-btn" id="endHomeBtn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px">← Home</button>
-<a href="mobile-lab.html" class="setup-stats-btn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;text-decoration:none;display:inline-block">← Back</a>
+<a href="mobile-lab.html" class="setup-stats-btn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;text-decoration:none;display:inline-block">← Home</a>
+<button class="setup-stats-btn" id="endBackBtn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px">← Back</button>
 </div>
 </div>
 <div class="repitelo-indicator" id="repiteloIndicator">🧠 WATCH...</div>
@@ -733,7 +733,7 @@ if(isPlaying){repCleanup();stopGame();}
 showScreen('setup');
 };
 
-document.getElementById('endHomeBtn').addEventListener('click',function(){
+document.getElementById('endBackBtn').addEventListener('click',function(){
 repCleanup();stopGame();showScreen('setup');
 });
 

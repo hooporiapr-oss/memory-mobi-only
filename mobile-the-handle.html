@@ -347,9 +347,6 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 </div>
 
 <button class="start-btn start-btn-big" id="startBtn">🧠 START THE HANDLE</button>
-<div class="setup-links">
-<button class="setup-stats-btn" id="viewStandingsBtn">🏆 Standings</button>
-</div>
 </div>
 
 <div class="play-screen hidden" id="playScreen">
@@ -384,7 +381,8 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <div class="name-title">WHO'S PLAYING?</div>
 <div class="name-sub">Enter your name so your score can land on the standings board.</div>
 <input type="text" id="playerNameInput" class="name-input" maxlength="20" placeholder="Your name" autocomplete="off">
-<button class="start-btn" id="nameContinueBtn" style="max-width:320px">▶ Continue</button>
+<button class="start-btn" id="nameContinueBtn" style="max-width:320px;margin-bottom:12px">▶ Continue</button>
+<button class="setup-stats-btn" id="viewStandingsBtn" style="border:1px solid rgba(255,215,0,.35);border-radius:100px;padding:10px 18px;color:var(--gold)">🏆 View Standings</button>
 </div>
 
 <div class="standings-screen" id="standingsScreen">
@@ -897,7 +895,16 @@ function showFeedback(q){clearTimeout(feedbackTimeout);var t=q==='perfect'?'PERF
 
 tapCongas.forEach(function(c,i){c.addEventListener('touchstart',function(e){e.preventDefault();handleTap(i,c)},{passive:false});c.addEventListener('mousedown',function(e){e.preventDefault();handleTap(i,c)});c.addEventListener('touchend',function(e){e.preventDefault()},{passive:false})});
 
-showScreen('setup');
+// Lets the hub link straight into this screen (mobile-lab.html's
+// "View Standings" card for this game) without landing on setup
+// first — a direct #standings deep link, not a query param, since
+// that needs no server-side routing to work on a static host.
+if(window.location.hash==='#standings'){
+  showScreen('standings');
+  renderStandings();
+}else{
+  showScreen('setup');
+}
 })();
 </script>
 </body>

@@ -301,6 +301,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 .name-sub{font-size:13px;color:rgba(255,255,255,.5);max-width:320px;margin-bottom:24px;line-height:1.5}
 .name-input{width:100%;max-width:320px;padding:16px;border-radius:16px;border:2px solid rgba(255,215,0,.3);background:rgba(255,255,255,.06);color:var(--cream);font-family:'Outfit',sans-serif;font-size:1.1rem;text-align:center;margin-bottom:16px}
 .name-input:focus{outline:none;border-color:var(--gold)}
+.nav-locked{opacity:.35;pointer-events:none}
 
 .standings-screen{display:none;flex-direction:column;min-height:calc(100vh - 20px);min-height:calc(100dvh - 20px);padding:16px 0;width:100%}
 .standings-screen.show{display:flex}
@@ -399,8 +400,9 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <div class="challenge-stats" id="challengeStats"></div>
 <button class="challenge-retry-btn" id="retryBtn">TRY AGAIN!</button>
 <button class="setup-stats-btn" id="endStandingsBtn" style="border:1px solid rgba(255,215,0,.35);border-radius:100px;padding:10px 18px;margin-top:12px;color:var(--gold)">🏆 View Standings</button>
+<div id="handleStandingsStatus" style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:10px">Saving to standings…</div>
 <div style="display:flex;gap:12px;margin-top:14px">
-<a href="mobile-lab.html" class="setup-stats-btn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;text-decoration:none;display:inline-block">← Home</a>
+<a href="mobile-lab.html" class="setup-stats-btn" id="endHomeLink" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;text-decoration:none;display:inline-block">← Home</a>
 <button class="setup-stats-btn" id="endBackBtn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px">← Back</button>
 </div>
 </div>
@@ -636,12 +638,43 @@ challengeResult.textContent=completed>=5?'GOLDEN MEMORY! 🧠':completed>=3?'GRE
 challengeResult.className='challenge-result '+(completed>=3?'win':'lose');
 challengeStats.textContent='Score: '+score+' · Rounds: '+completed+' · Best: '+best;
 if(completed>=3){playCongaRoll();launchConfetti();}
-recordScoreToStandings(currentPlayerName,score,completed,repRound,0,repShotLog);
 challengeComplete.classList.add('show');
 isPlaying=false;
 repiteloIndicator.className='repitelo-indicator';
 repiteloProgress.classList.remove('show');
 tapCongas.forEach(function(c){c.classList.remove('lit')});
+
+// Navigation stays locked only for the brief window the save is
+// actually in flight — leaving the page (tapping Home or View
+// Standings) can abort a pending request before it completes, which
+// is exactly the class of bug that was silently losing entries here.
+var statusEl=document.getElementById('handleStandingsStatus');
+var standingsBtn=document.getElementById('endStandingsBtn');
+var homeLink=document.getElementById('endHomeLink');
+standingsBtn.classList.add('nav-locked');
+homeLink.classList.add('nav-locked');
+statusEl.textContent='Saving to standings…';
+statusEl.style.color='rgba(255,255,255,.4)';
+
+var navUnlocked=false;
+function unlockNav(){
+  if(navUnlocked)return;
+  navUnlocked=true;
+  standingsBtn.classList.remove('nav-locked');
+  homeLink.classList.remove('nav-locked');
+}
+setTimeout(unlockNav,6000);
+
+recordScoreToStandings(currentPlayerName,score,completed,repRound,0,repShotLog).then(function(ok){
+  if(ok){
+    statusEl.textContent='✓ Saved to standings';
+    statusEl.style.color='#00D9A5';
+  }else{
+    statusEl.textContent='⚠ Couldn\'t save — score still stands above, just not on the board';
+    statusEl.style.color='#FF6B35';
+  }
+  unlockNav();
+});
 }
 
 function repCleanup(){
@@ -758,9 +791,24 @@ var currentPlayerName='';
 function recordScoreToStandings(name,finalScore,made,attempts,avgMs,shots){
   return fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
     method:'POST',
-    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
     body:JSON.stringify({player_name:name,score:finalScore,made:made,attempts:attempts,avg_ms:avgMs,shots:shots||[]})
-  }).catch(function(){});
+  }).then(function(res){
+    // fetch() only rejects on a genuine network failure — a rejected
+    // insert (bad schema, RLS, etc.) still resolves normally with a
+    // non-2xx status, so this MUST be checked explicitly or a failed
+    // save looks identical to a successful one to the caller.
+    if(!res.ok){
+      return res.text().then(function(body){
+        console.error('The Handle standings write failed:',res.status,body);
+        return false;
+      });
+    }
+    return true;
+  }).catch(function(e){
+    console.error('The Handle standings write — network error:',e);
+    return false;
+  });
 }
 
 function fetchStandings(){

@@ -741,7 +741,13 @@ function restartGame(){
   $('playActionBtn').disabled=false;
 }
 $('playActionBtn').onclick=startRound;
-initDemoCourt(); updateUILanguage(); startDemo();
+initDemoCourt(); updateUILanguage();
+if(isFullGameActive()){
+  showScreen('play');
+  initGame();
+}else{
+  startDemo();
+}
 })();
 </script>
 </body>

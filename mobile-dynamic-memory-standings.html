@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <script>
-if (localStorage.getItem('rct-mobile-pass') !== '1') {
-  window.location.replace('index.html');
+// This board has its own, separate access code from either game —
+// a code that unlocks Recall/Reflex/Replay/Recognition or The Handle
+// itself does NOT unlock this board, and vice versa. Uses
+// sessionStorage (re-enter each session) rather than the games' own
+// permanent, per-device localStorage unlock, matching the same
+// pattern the web version's standings gate already uses.
+if (sessionStorage.getItem('mobile-standings-gate-pass') !== '1') {
+  var params = new URLSearchParams(window.location.search);
+  var tab = params.get('tab');
+  window.location.replace('mobile-standings-index.html' + (tab ? '?tab=' + encodeURIComponent(tab) : ''));
 }
 </script>
 <meta charset="UTF-8">

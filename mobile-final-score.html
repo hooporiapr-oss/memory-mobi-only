@@ -71,6 +71,8 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
     <a class="action-btn primary" id="playAgainBtn" href="/002-recall.html">🏀 Play Again — All 4 Quarters</a>
     <a class="action-btn secondary" href="/mobile-lab.html">← Back to the Hub</a>
 
+    <div id="standingsStatus" style="font-size:.72rem;font-weight:700;letter-spacing:.04em;color:#8892a0;margin:-4px 0 14px">Saving to standings…</div>
+
     <div class="hub-foot">Powered by <b>Gostar Digital</b></div>
   </div>
 </div>
@@ -92,6 +94,65 @@ document.getElementById('playAgainBtn').addEventListener('click',function(){
   sessionStorage.setItem('rct-mobile-fullgame-active','1');
   sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));
 });
+
+// ══════════════════════════════════════════════════════
+//  STANDINGS — one single board for the whole four-quarter run, not
+//  per-quarter. Written exactly once, here, the moment a run
+//  genuinely completes — none of the four individual quarter games
+//  write anything to this table themselves.
+//
+//  The save status is shown directly on screen rather than only in
+//  the console — a silent failure here is useless for actually
+//  diagnosing anything, so success or failure is visible without
+//  needing dev tools open at all.
+// ══════════════════════════════════════════════════════
+var SUPABASE_URL='https://sdaphocueugzfvjovuxd.supabase.co';
+var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+var SB_TABLE='ritnome_mobile_dynamic_memory_standings';
+var statusEl=document.getElementById('standingsStatus');
+
+// Defensive coercion — if any quarter score ever came through as
+// something other than a clean number, sending that straight to an
+// integer NOT NULL column would get the whole insert rejected.
+function toInt(v){ var n=Number(v); return isFinite(n) ? Math.round(n) : 0; }
+var payload={
+  player_name:(sessionStorage.getItem('rct-mobile-player-name')||'Player').slice(0,40),
+  q1_score:toInt(scores.q1),
+  q2_score:toInt(scores.q2),
+  q3_score:toInt(scores.q3),
+  q4_score:toInt(scores.q4),
+  total_score:toInt(total)
+};
+
+saveToStandings(payload);
+
+async function saveToStandings(payload){
+  try{
+    var res=await fetch(SUPABASE_URL+'/rest/v1/'+SB_TABLE,{
+      method:'POST',
+      headers:{
+        'apikey':SUPABASE_ANON_KEY,
+        'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body:JSON.stringify(payload)
+    });
+    if(res.ok){
+      statusEl.textContent='✓ Saved to standings';
+      statusEl.style.color='#00D9A5';
+    }else{
+      var bodyText=await res.text().catch(function(){return ''});
+      console.error('Mobile Dynamic Memory standings write failed:',res.status,bodyText);
+      statusEl.textContent='⚠ Couldn\'t save (error '+res.status+') — score still stands above, just not on the board';
+      statusEl.style.color='#FF6B35';
+    }
+  }catch(e){
+    console.error('Mobile Dynamic Memory standings write — network error:',e);
+    statusEl.textContent='⚠ Couldn\'t reach the standings server — score still stands above, just not on the board';
+    statusEl.style.color='#FF6B35';
+  }
+}
 })();
 </script>
 </body>

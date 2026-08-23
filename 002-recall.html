@@ -850,7 +850,17 @@ function resetRound(){
 $('playActionBtn').onclick=startRound;
 initDemoCourt();
 updateUILanguage();
-startDemo();
+// A tracked Full Game run should drop the player straight into
+// gameplay for every quarter — the How To Play and mode-select
+// screens are genuinely useful for standalone practice, but forcing
+// a player to click through both, four separate times, in the
+// middle of a run they already committed to, is just friction.
+if(isFullGameActive()){
+  showScreen('play');
+  initGame();
+}else{
+  startDemo();
+}
 })();
 </script>
 </body>

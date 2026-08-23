@@ -347,6 +347,9 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 </div>
 
 <button class="start-btn start-btn-big" id="startBtn">🧠 START THE HANDLE</button>
+<div class="setup-links">
+<button class="setup-stats-btn" id="viewStandingsBtn">🏆 Standings</button>
+</div>
 </div>
 
 <div class="play-screen hidden" id="playScreen">
@@ -375,6 +378,22 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 </div>
 
 <button class="stop-btn" id="stopBtn">⏹ STOP</button>
+</div>
+
+<div class="name-screen" id="nameScreen">
+<div class="name-title">WHO'S PLAYING?</div>
+<div class="name-sub">Enter your name so your score can land on the standings board.</div>
+<input type="text" id="playerNameInput" class="name-input" maxlength="20" placeholder="Your name" autocomplete="off">
+<button class="start-btn" id="nameContinueBtn" style="max-width:320px">▶ Continue</button>
+</div>
+
+<div class="standings-screen" id="standingsScreen">
+<div class="standings-header">
+<button class="standings-back-btn" id="standingsBackBtn">←</button>
+<div class="standings-title">THE STANDINGS</div>
+<button class="standings-back-btn" id="standingsRefreshBtn">↻</button>
+</div>
+<div class="standings-list" id="standingsList"></div>
 </div>
 
 <div class="challenge-complete" id="challengeComplete">
@@ -618,6 +637,7 @@ challengeResult.textContent=completed>=5?'GOLDEN MEMORY! 🧠':completed>=3?'GRE
 challengeResult.className='challenge-result '+(completed>=3?'win':'lose');
 challengeStats.textContent='Score: '+score+' · Rounds: '+completed+' · Best: '+best;
 if(completed>=3){playCongaRoll();launchConfetti();}
+recordScoreToStandings(currentPlayerName,score,completed,repRound,0,repShotLog);
 challengeComplete.classList.add('show');
 isPlaying=false;
 repiteloIndicator.className='repitelo-indicator';
@@ -701,6 +721,8 @@ helpOverlay.addEventListener('touchstart',function(e){if(e.target===helpOverlay)
 
 var setupScreen=document.getElementById('setupScreen');
 var playScreen=document.getElementById('playScreen');
+var nameScreen=document.getElementById('nameScreen');
+var standingsScreen=document.getElementById('standingsScreen');
 var stopBtn=document.getElementById('stopBtn');
 var playBackBtn=document.getElementById('playBackBtn');
 var playModeName=document.getElementById('playModeName');
@@ -710,6 +732,8 @@ var MODE_LABELS={repitelo:'THE HANDLE'};
 function showScreen(name){
 setupScreen.style.display='none';
 playScreen.classList.add('hidden');
+nameScreen.classList.remove('show');
+standingsScreen.classList.remove('show');
 challengeComplete.classList.remove('show');
 
 if(name==='setup'){
@@ -719,10 +743,132 @@ playScreen.classList.remove('hidden');
 playModeName.textContent=MODE_LABELS[currentMode]||'THE HANDLE';
 playBpmLabel.textContent=bpm+' BPM';
 window.scrollTo(0,0);
+}else if(name==='name'){
+nameScreen.classList.add('show');
+}else if(name==='standings'){
+standingsScreen.classList.add('show');
 }
 }
 
-startBtn.onclick=function(){initAudio();showScreen('play');showCountdown(function(){repStart()})};
+// ── standings ──
+var SB_URL='https://sdaphocueugzfvjovuxd.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+var SB_TABLE='ritnome_mobile_handle_standings';
+var currentPlayerName='';
+
+function recordScoreToStandings(name,finalScore,made,attempts,avgMs,shots){
+  return fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({player_name:name,score:finalScore,made:made,attempts:attempts,avg_ms:avgMs,shots:shots||[]})
+  }).catch(function(){});
+}
+
+function fetchStandings(){
+  var url=SB_URL+'/rest/v1/'+SB_TABLE+'?select=player_name,score,made,attempts,avg_ms,shots&order=score.desc';
+  return fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
+    .then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})
+    .then(function(rows){
+      var best={};
+      (rows||[]).forEach(function(r){
+        var existing=best[r.player_name];
+        if(!existing||r.score>existing.pts){
+          best[r.player_name]={name:r.player_name,pts:r.score,made:r.made,attempts:r.attempts,ms:r.avg_ms,shots:r.shots||[]};
+        }
+      });
+      return Object.keys(best).map(function(n){return best[n]}).sort(function(a,b){return b.pts-a.pts});
+    });
+}
+
+function renderTapLog(container,shots){
+  if(!shots||!shots.length){
+    container.innerHTML='<div class="tap-log-empty">No round-by-round detail saved for this run.</div>';
+    return;
+  }
+  var chips=shots.map(function(s){
+    if(s.hit){
+      return '<div class="tap-chip hit"><span>ROUND '+s.round+'</span><span>+'+s.pts+'</span></div>';
+    }
+    return '<div class="tap-chip miss"><span>ROUND '+s.round+'</span><span>MISS</span></div>';
+  }).join('');
+  container.innerHTML=chips;
+}
+
+function renderStandings(){
+  var listEl=document.getElementById('standingsList');
+  listEl.innerHTML='<div class="box-empty">Loading standings…</div>';
+  var openRowName=null;
+
+  fetchStandings().then(function(ranked){
+    if(!ranked.length){
+      listEl.innerHTML='<div class="box-empty">No players yet — be the first name on the board.</div>';
+      return;
+    }
+    listEl.innerHTML=ranked.map(function(p,i){
+      var rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+      var safeName=p.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return '<div>'
+        +'<div class="standings-row '+rankClass+'" data-name="'+safeName+'">'
+          +'<span class="standings-rank">'+(i+1)+'</span>'
+          +'<span class="standings-name">'+safeName+'</span>'
+          +'<span class="standings-rounds">'+(p.made>0?p.made+' rounds':'')+'</span>'
+          +'<span class="standings-pts">'+p.pts+'</span>'
+        +'</div>'
+        +'<div class="tap-log" id="tapLog-'+i+'"></div>'
+        +'</div>';
+    }).join('');
+    listEl.querySelectorAll('.standings-row').forEach(function(row,i){
+      row.addEventListener('click',function(){
+        var log=document.getElementById('tapLog-'+i);
+        var isOpen=log.style.display==='flex';
+        listEl.querySelectorAll('.tap-log').forEach(function(l){l.style.display='none'});
+        if(!isOpen){
+          var p=ranked[i];
+          renderTapLog(log,p.shots);
+          log.style.display='flex';
+        }
+      });
+    });
+  }).catch(function(){
+    listEl.innerHTML='<div class="box-empty">Couldn\'t load standings right now — try again in a moment.</div>';
+  });
+}
+
+document.getElementById('viewStandingsBtn').addEventListener('click',function(){
+  showScreen('standings');
+  renderStandings();
+});
+document.getElementById('standingsBackBtn').addEventListener('click',function(){
+  showScreen('setup');
+});
+document.getElementById('standingsRefreshBtn').addEventListener('click',function(){
+  renderStandings();
+});
+
+document.getElementById('nameContinueBtn').addEventListener('click',function(){
+  var input=document.getElementById('playerNameInput');
+  var name=input.value.trim();
+  if(!name){
+    input.focus();
+    input.style.borderColor='#ff4444';
+    setTimeout(function(){input.style.borderColor=''},600);
+    return;
+  }
+  currentPlayerName=name.slice(0,20);
+  showScreen('play');
+  showCountdown(function(){repStart()});
+});
+document.getElementById('playerNameInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('nameContinueBtn').click();
+});
+
+startBtn.onclick=function(){
+  initAudio();
+  var input=document.getElementById('playerNameInput');
+  if(currentPlayerName)input.value=currentPlayerName;
+  showScreen('name');
+  setTimeout(function(){input.focus()},50);
+};
 
 stopBtn.onclick=function(){
 repCleanup();stopGame();showScreen('setup');

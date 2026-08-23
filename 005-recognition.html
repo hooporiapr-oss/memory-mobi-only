@@ -504,6 +504,18 @@ function showQuarterStats(finalScore){
   var scores=loadQuarterScores();
   scores['q'+THIS_QUARTER]=finalScore;
   sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify(scores));
+
+  // Q4 hands off straight to the real final-score screen — that
+  // screen already shows the exact same Q1-Q4 + total breakdown,
+  // and is also where the standings write actually happens, so
+  // showing this quarter-complete screen here first would just be a
+  // second, redundant scoreboard the player has to click through.
+  if(THIS_QUARTER>=4){
+    sessionStorage.setItem('rct-mobile-fullgame-active','0');
+    window.location.href='/mobile-final-score.html';
+    return;
+  }
+
   var total=scores.q1+scores.q2+scores.q3+scores.q4;
 
   document.getElementById('qsTitle').textContent=QUARTER_SEQUENCE[THIS_QUARTER-1].label.toUpperCase()+' QUARTER COMPLETE!';
@@ -515,17 +527,9 @@ function showQuarterStats(finalScore){
   for(var i=1;i<=4;i++)document.getElementById('qsCell'+i).classList.toggle('qs-current',i===THIS_QUARTER);
 
   var nextBtn=document.getElementById('qsNextBtn');
-  if(THIS_QUARTER<4){
-    var nextQ=QUARTER_SEQUENCE[THIS_QUARTER];
-    nextBtn.textContent='NEXT: '+nextQ.label.toUpperCase()+' QUARTER →';
-    nextBtn.onclick=function(){window.location.href=nextQ.file};
-  }else{
-    nextBtn.textContent='SEE FINAL SCORE →';
-    nextBtn.onclick=function(){
-      sessionStorage.setItem('rct-mobile-fullgame-active','0');
-      window.location.href='/mobile-final-score.html';
-    };
-  }
+  var nextQ=QUARTER_SEQUENCE[THIS_QUARTER];
+  nextBtn.textContent='NEXT: '+nextQ.label.toUpperCase()+' QUARTER →';
+  nextBtn.onclick=function(){window.location.href=nextQ.file};
   document.getElementById('quarterStatsScreen').style.display='flex';
 }
 var trainingLevel=1;
@@ -800,7 +804,13 @@ function restartGame(){
   $('playActionBtn').disabled=false;
 }
 $('playActionBtn').onclick=startRound;
-initDemoCourt(); updateUILanguage(); startDemo();
+initDemoCourt(); updateUILanguage();
+if(isFullGameActive()){
+  showScreen('play');
+  initGame();
+}else{
+  startDemo();
+}
 })();
 </script>
 </body>

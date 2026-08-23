@@ -69,6 +69,18 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
   .handle-card-tag{font-family:'Bebas Neue',sans-serif;font-size:.66rem;letter-spacing:2px;color:#c9a3fa;margin-bottom:4px}
   .handle-card-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#fff}
   .handle-card-desc{font-size:.68rem;color:var(--muted);margin-top:4px}
+
+  /* Name entry — required before every tracked Full Game run, since
+     the final-score screen writes to standings and that only means
+     something if every entry is honestly attributed to a real
+     player. Standalone quarter practice never shows this at all. */
+  .name-screen{position:fixed;inset:0;z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--dark);padding:24px;text-align:center}
+  .name-screen.show{display:flex}
+  .name-title{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;color:#fff;text-shadow:0 0 24px rgba(255,30,60,.6)}
+  .name-title span{color:var(--red)}
+  .name-sub{font-size:.82rem;color:var(--muted);max-width:340px;margin-bottom:24px;line-height:1.5}
+  .name-input{width:100%;max-width:340px;padding:16px;border-radius:14px;border:2px solid rgba(255,30,60,.4);background:rgba(255,255,255,.06);color:#fff;font-family:'Outfit',sans-serif;font-size:1.1rem;text-align:center;margin-bottom:16px}
+  .name-input:focus{outline:none;border-color:var(--red)}
 </style>
 </head>
 <body>
@@ -77,7 +89,7 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
 <button id="sound-toggle" onclick="toggleSound()" aria-label="Toggle sound" title="Toggle beat">🔊</button>
 <div id="hub">
   <div class="hub-head">
-    <div class="hub-kicker">🧠 Memory Basketball</div>
+    <div class="hub-kicker">🧠 Basketball Memory</div>
     <img class="hub-brand-img" src="ready.png" alt="Are You Ready?">
     <div class="hub-sub">Choose your challenge</div>
   </div>
@@ -111,12 +123,19 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
       <div class="quarter-desc">Watch, echo, spot the change</div>
     </a>
   </div>
-  <a class="fullgame-btn" id="fullGameBtn" href="/002-recall.html" onclick="sessionStorage.setItem('rct-mobile-fullgame-active','1');sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));">🏀 PLAY THE FULL GAME — ALL 4 QUARTERS</a>
+  <button class="fullgame-btn" id="fullGameBtn">🏀 PLAY THE FULL GAME — ALL 4 QUARTERS</button>
   <div class="hub-foot">Powered by <b>Gostar Digital</b></div>
   <div id="site-footer">
     <div class="footer-copy">© Copyright Gostar Digital LLC. All Rights Reserved.</div>
     <div class="footer-links"><a href="/privacy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Use</a></div>
   </div>
+</div>
+
+<div class="name-screen" id="nameScreen">
+  <div class="name-title">WHO'S <span>PLAYING?</span></div>
+  <div class="name-sub">Enter your name to run all four quarters. Your final score gets tracked on the standings — every player competing for the same board.</div>
+  <input type="text" id="playerNameInput" class="name-input" maxlength="20" placeholder="Your name" autocomplete="off">
+  <button class="fullgame-btn" id="nameContinueBtn" style="max-width:340px;margin:0">▶ Continue</button>
 </div>
 <script>
 var $=function(id){return document.getElementById(id)};
@@ -157,6 +176,32 @@ function spawnDot(){
 }
 setInterval(beatTick, beatMs);
 beatTick();
+
+// Starts a real, tracked four-quarter run — a fresh scoreboard, and
+// the player's real name captured before anything launches. Standalone
+// quarter practice (tapping any Q1-Q4 card directly) never sets any
+// of this, so nothing here ever shows for solo play.
+document.getElementById('fullGameBtn').addEventListener('click',function(){
+  document.getElementById('nameScreen').classList.add('show');
+  setTimeout(function(){document.getElementById('playerNameInput').focus()},50);
+});
+document.getElementById('nameContinueBtn').addEventListener('click',function(){
+  var input=document.getElementById('playerNameInput');
+  var name=input.value.trim();
+  if(!name){
+    input.focus();
+    input.style.borderColor='#ff1e3c';
+    setTimeout(function(){input.style.borderColor=''},600);
+    return;
+  }
+  sessionStorage.setItem('rct-mobile-player-name',name.slice(0,20));
+  sessionStorage.setItem('rct-mobile-fullgame-active','1');
+  sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));
+  window.location.href='/002-recall.html';
+});
+document.getElementById('playerNameInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('nameContinueBtn').click();
+});
 </script>
 </body>
 </html>

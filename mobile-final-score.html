@@ -45,6 +45,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .action-btn:active{transform:scale(.98)}
 .action-btn.primary{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 0 30px rgba(255,30,60,.6)}
 .action-btn.secondary{background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--border)}
+.action-btn.disabled{opacity:.35;pointer-events:none}
 
 .hub-foot{text-align:center;margin-top:18px;font-size:.6rem;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#4a5058}
 .hub-foot b{color:var(--muted);font-style:italic}
@@ -68,9 +69,9 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
       <div class="total-val" id="fsTotal">0</div>
     </div>
 
-    <a class="action-btn primary" id="playAgainBtn" href="/002-recall.html">🏀 Play Again — All 4 Quarters</a>
-    <a class="action-btn secondary" href="/mobile-dynamic-memory-standings.html">🏆 View Standings</a>
-    <a class="action-btn secondary" href="/mobile-lab.html">← Back to the Hub</a>
+    <a class="action-btn primary disabled" id="playAgainBtn" href="/002-recall.html">🏀 Play Again — All 4 Quarters</a>
+    <a class="action-btn secondary disabled" id="viewStandingsLink" href="/mobile-dynamic-memory-standings.html">🏆 View Standings</a>
+    <a class="action-btn secondary disabled" id="backToHubLink" href="/mobile-lab.html">← Back to the Hub</a>
 
     <div id="standingsStatus" style="font-size:.72rem;font-weight:700;letter-spacing:.04em;color:#8892a0;margin:-4px 0 14px">Saving to standings…</div>
 
@@ -127,6 +128,21 @@ var payload={
 
 saveToStandings(payload);
 
+// Navigation stays disabled only for the brief window the save is
+// actually in flight — leaving the page (tapping any of the three
+// buttons above) can abort a pending fetch before it completes,
+// which is exactly what was silently losing scores. A hard timeout
+// guarantees nobody's ever stuck waiting if the network hangs.
+var navUnlocked=false;
+function unlockNavigation(){
+  if(navUnlocked)return;
+  navUnlocked=true;
+  document.getElementById('playAgainBtn').classList.remove('disabled');
+  document.getElementById('viewStandingsLink').classList.remove('disabled');
+  document.getElementById('backToHubLink').classList.remove('disabled');
+}
+setTimeout(unlockNavigation,6000);
+
 async function saveToStandings(payload){
   try{
     var res=await fetch(SUPABASE_URL+'/rest/v1/'+SB_TABLE,{
@@ -152,6 +168,8 @@ async function saveToStandings(payload){
     console.error('Mobile Dynamic Memory standings write — network error:',e);
     statusEl.textContent='⚠ Couldn\'t reach the standings server — score still stands above, just not on the board';
     statusEl.style.color='#FF6B35';
+  }finally{
+    unlockNavigation();
   }
 }
 })();

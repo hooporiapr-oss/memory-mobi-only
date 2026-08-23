@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+if (sessionStorage.getItem('mobile-handle-standings-gate-pass') !== '1') {
+  window.location.replace('/mobile-handle-standings-index.html');
+}
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>The Handle — Standings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#9B59B6;--dark:#0a0a0f;--card:#111118;--text:#fff;--muted:#8892a0;--border:rgba(255,255,255,0.1);--gold:#ffd35a}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overflow-x:hidden}
+
+.mini-nav{position:fixed;top:0;left:0;right:0;background:var(--card);border-bottom:1px solid var(--border);padding-top:env(safe-area-inset-top);z-index:1000}
+.nav-row{display:flex;align-items:center;justify-content:space-between;height:50px;padding:0 12px}
+.back-btn{display:flex;align-items:center;gap:6px;padding:8px 12px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.2s}
+.back-btn:active{border-color:var(--purple);color:var(--purple)}
+.nav-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--purple)}
+.refresh-btn{background:none;border:2px solid rgba(255,255,255,.15);border-radius:50%;width:36px;height:36px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.refresh-btn:active{background:rgba(255,255,255,.1)}
+
+.container{max-width:520px;margin:0 auto;padding:calc(66px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom))}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:4px;text-shadow:0 0 24px rgba(155,89,182,.6)}
+.page-sub{text-align:center;font-size:.75rem;color:var(--muted);margin-bottom:20px}
+
+.standings-list{display:flex;flex-direction:column;gap:8px}
+.standings-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:background .15s}
+.standings-row:active{background:rgba(255,255,255,.09)}
+.standings-row.rank-1{border-color:rgba(255,211,90,.5);background:rgba(255,211,90,.08)}
+.standings-row.rank-2{border-color:rgba(200,200,220,.4);background:rgba(200,200,220,.06)}
+.standings-row.rank-3{border-color:rgba(255,140,66,.4);background:rgba(255,140,66,.06)}
+.standings-rank{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:rgba(255,255,255,.4);width:26px;flex-shrink:0}
+.standings-row.rank-1 .standings-rank{color:var(--gold)}
+.standings-row.rank-2 .standings-rank{color:#c8c8dc}
+.standings-row.rank-3 .standings-rank{color:#ff8c42}
+.standings-name{flex:1;font-weight:700;font-size:.95rem;color:var(--text);text-align:left;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.standings-rounds{font-size:.7rem;color:rgba(255,255,255,.4);flex-shrink:0}
+.standings-pts{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);flex-shrink:0;min-width:50px;text-align:right}
+
+.tap-log{display:none;flex-wrap:wrap;gap:6px;padding:12px;background:rgba(0,0,0,.3);border-radius:12px;margin:-2px 0 6px}
+.tap-log.show{display:flex}
+.tap-chip{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:.7rem}
+.tap-chip.hit{background:rgba(0,217,165,.12);color:#00D9A5}
+.tap-chip.miss{background:rgba(255,68,68,.12);color:#ff6b6b}
+.tap-log-empty{width:100%;text-align:center;color:rgba(255,255,255,.4);font-size:.8rem;padding:8px}
+
+.box-empty{text-align:center;color:var(--muted);padding:40px 16px;font-size:.9rem}
+</style>
+</head>
+<body>
+<nav class="mini-nav">
+<div class="nav-row">
+<a href="/mobile-lab.html" class="back-btn">← Back</a>
+<div class="nav-title">STANDINGS</div>
+<button class="refresh-btn" id="refreshBtn">↻</button>
+</div>
+</nav>
+<div class="container">
+<div class="page-title">THE HANDLE</div>
+<div class="page-sub">Watch, remember, repeat — ranked by best score</div>
+<div class="standings-list" id="standingsList"></div>
+</div>
+
+<script>
+(function(){
+var SUPABASE_URL='https://sdaphocueugzfvjovuxd.supabase.co';
+var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+var HANDLE_TABLE='ritnome_mobile_handle_standings';
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fetchHandleStandings(){
+  var url=SUPABASE_URL+'/rest/v1/'+HANDLE_TABLE+'?select=player_name,score,made,attempts,avg_ms,shots&order=score.desc';
+  return fetch(url,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}})
+    .then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})
+    .then(function(rows){
+      var best={};
+      (rows||[]).forEach(function(r){
+        var existing=best[r.player_name];
+        if(!existing||r.score>existing.pts){
+          best[r.player_name]={name:r.player_name,pts:r.score,made:r.made,attempts:r.attempts,shots:r.shots||[]};
+        }
+      });
+      return Object.keys(best).map(function(n){return best[n]}).sort(function(a,b){return b.pts-a.pts});
+    });
+}
+function renderTapLog(container,shots){
+  if(!shots||!shots.length){
+    container.innerHTML='<div class="tap-log-empty">No round-by-round detail saved for this run.</div>';
+    return;
+  }
+  container.innerHTML=shots.map(function(s){
+    if(s.hit)return '<div class="tap-chip hit"><span>ROUND '+s.round+'</span><span>+'+s.pts+'</span></div>';
+    return '<div class="tap-chip miss"><span>ROUND '+s.round+'</span><span>MISS</span></div>';
+  }).join('');
+}
+function renderStandings(){
+  var listEl=document.getElementById('standingsList');
+  listEl.innerHTML='<div class="box-empty">Loading standings…</div>';
+  fetchHandleStandings().then(function(ranked){
+    if(!ranked.length){
+      listEl.innerHTML='<div class="box-empty">No players yet — be the first name on the board.</div>';
+      return;
+    }
+    listEl.innerHTML=ranked.map(function(p,i){
+      var rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+      var safeName=escapeHtml(p.name);
+      return '<div>'
+        +'<div class="standings-row '+rankClass+'" data-idx="'+i+'">'
+          +'<span class="standings-rank">'+(i+1)+'</span>'
+          +'<span class="standings-name">'+safeName+'</span>'
+          +'<span class="standings-rounds">'+(p.made>0?p.made+' rounds':'')+'</span>'
+          +'<span class="standings-pts">'+p.pts+'</span>'
+        +'</div>'
+        +'<div class="tap-log" id="detail-'+i+'"></div>'
+      +'</div>';
+    }).join('');
+    listEl.querySelectorAll('.standings-row').forEach(function(row,i){
+      row.addEventListener('click',function(){
+        var log=document.getElementById('detail-'+i);
+        var isOpen=log.classList.contains('show');
+        listEl.querySelectorAll('.tap-log').forEach(function(l){l.classList.remove('show')});
+        if(!isOpen){
+          renderTapLog(log,ranked[i].shots);
+          log.classList.add('show');
+        }
+      });
+    });
+  }).catch(function(){
+    listEl.innerHTML='<div class="box-empty">Couldn\'t load standings right now — try again in a moment.</div>';
+  });
+}
+
+document.getElementById('refreshBtn').addEventListener('click',renderStandings);
+renderStandings();
+})();
+</script>
+</body>
+</html>

@@ -400,6 +400,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <div class="challenge-result" id="challengeResult">YOU WIN!</div>
 <div class="challenge-stats" id="challengeStats"></div>
 <button class="challenge-retry-btn" id="retryBtn">TRY AGAIN!</button>
+<button class="setup-stats-btn" id="endStandingsBtn" style="border:1px solid rgba(255,215,0,.35);border-radius:100px;padding:10px 18px;margin-top:12px;color:var(--gold)">🏆 View Standings</button>
 <div style="display:flex;gap:12px;margin-top:14px">
 <a href="mobile-lab.html" class="setup-stats-btn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;text-decoration:none;display:inline-block">← Home</a>
 <button class="setup-stats-btn" id="endBackBtn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px">← Back</button>
@@ -835,6 +836,10 @@ function renderStandings(){
 }
 
 document.getElementById('viewStandingsBtn').addEventListener('click',function(){
+  showScreen('standings');
+  renderStandings();
+});
+document.getElementById('endStandingsBtn').addEventListener('click',function(){
   showScreen('standings');
   renderStandings();
 });

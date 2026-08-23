@@ -127,7 +127,7 @@ function tryEnter(){
     // strand the player back on the default tab.
     var params = new URLSearchParams(window.location.search);
     var tab = params.get('tab');
-    var dest = 'mobile-dynamic-memory-standings.html' + (tab ? '?tab=' + encodeURIComponent(tab) : '');
+    var dest = '/mobile-dynamic-memory-standings.html' + (tab ? '?tab=' + encodeURIComponent(tab) : '');
     window.location.href = dest;
   })
   .catch(function(){

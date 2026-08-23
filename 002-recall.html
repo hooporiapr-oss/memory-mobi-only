@@ -168,10 +168,6 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
 @media(max-height:550px){.demo-court{width:180px;height:180px}.play-court-wrap{max-width:260px}.play-stat-value{font-size:1.3rem}.play-message-text{font-size:.8rem}.play-action-btn{padding:10px;font-size:1rem}}
 @media(max-width:360px){.play-court-wrap{max-width:280px}.play-court{gap:3px;padding:6px}.demo-court{width:180px;height:180px}}
 
-/* Quarter Stats — shown instead of the normal solo end screen only
-   when this game is being played as part of a real, tracked
-   four-quarter run. Purely additive: standalone play never sets the
-   session flag this checks, so nothing here ever shows otherwise. */
 #quarterStatsScreen{
   display:none;position:fixed;inset:0;z-index:300;
   background:var(--darker);
@@ -556,14 +552,6 @@ var LEVEL_CELLS={1:3,2:4,3:5,4:6,5:7};
 var TRAINING_ROUNDS=10;
 var gameMode='game';
 
-// ══════════════════════════════════════════════════════
-//  FULL GAME MODE — four quarters chained together with a real,
-//  running scoreboard. Only active when the player started from the
-//  "Play the Full Game" button on the mobile hub, which sets these
-//  session flags. Standalone play (tapping straight into this game)
-//  never sees any of this — sessionStorage stays empty, and the
-//  normal solo end screen shows exactly as it always has.
-// ══════════════════════════════════════════════════════
 var THIS_QUARTER=1;
 var QUARTER_SEQUENCE=[
   {n:1,label:'1st',file:'/002-recall.html'},

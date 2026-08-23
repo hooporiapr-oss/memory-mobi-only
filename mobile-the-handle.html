@@ -834,12 +834,10 @@ function renderStandings(){
 }
 
 document.getElementById('viewStandingsBtn').addEventListener('click',function(){
-  showScreen('standings');
-  renderStandings();
+  window.location.href='/mobile-dynamic-memory-standings.html?tab=handle';
 });
 document.getElementById('endStandingsBtn').addEventListener('click',function(){
-  showScreen('standings');
-  renderStandings();
+  window.location.href='/mobile-dynamic-memory-standings.html?tab=handle';
 });
 document.getElementById('standingsBackBtn').addEventListener('click',function(){
   showScreen('setup');

@@ -11,7 +11,7 @@
 if (sessionStorage.getItem('mobile-standings-gate-pass') !== '1') {
   var params = new URLSearchParams(window.location.search);
   var tab = params.get('tab');
-  window.location.replace('mobile-standings-index.html' + (tab ? '?tab=' + encodeURIComponent(tab) : ''));
+  window.location.replace('/mobile-standings-index.html' + (tab ? '?tab=' + encodeURIComponent(tab) : ''));
 }
 </script>
 <meta charset="UTF-8">

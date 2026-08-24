@@ -104,30 +104,20 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
     <span style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:1.5px;color:#c9a3fa">🏆 The Handle - View Standings</span>
   </a>
 
-  <div class="game-list">
+  <div class="game-list" style="grid-template-columns:1fr 1fr;max-width:340px">
     <a class="quarter-card" href="/002-recall.html">
-      <div class="quarter-num">Q1</div>
+      <div class="quarter-num">H1</div>
       <div class="quarter-name">RECALL</div>
       <div class="quarter-desc">Watch &middot; Remember &middot; Tap in order</div>
     </a>
-    <a class="quarter-card" href="/003-reflex.html">
-      <div class="quarter-num">Q2</div>
-      <div class="quarter-name">REFLEX</div>
-      <div class="quarter-desc">Fast reflexes to the beat</div>
-    </a>
-    <a class="quarter-card" href="/004-replay.html">
-      <div class="quarter-num">Q3</div>
-      <div class="quarter-name">REPLAY</div>
-      <div class="quarter-desc">Repeat the sequence</div>
-    </a>
     <a class="quarter-card" href="/005-recognition.html">
-      <div class="quarter-num">Q4</div>
+      <div class="quarter-num">H2</div>
       <div class="quarter-name">RECOGNITION</div>
       <div class="quarter-desc">Watch, echo, spot the change</div>
     </a>
   </div>
-  <button class="fullgame-btn" id="fullGameBtn">🏀 PLAY THE FULL GAME — ALL 4 QUARTERS</button>
-  <a class="fullgame-btn" href="/mobile-standings-index.html" style="background:transparent;border:1.5px solid rgba(255,30,60,.4);color:#fff;box-shadow:none;display:block;text-decoration:none">🏆 4 Quarter - View Standings</a>
+  <button class="fullgame-btn" id="fullGameBtn">🏀 PLAY THE FULL GAME — BOTH HALVES</button>
+  <a class="fullgame-btn" href="/mobile-standings-index.html" style="background:transparent;border:1.5px solid rgba(255,30,60,.4);color:#fff;box-shadow:none;display:block;text-decoration:none">🏆 2 Half - View Standings</a>
   <div class="hub-foot">Powered by <b>Gostar Digital</b></div>
   <div id="site-footer">
     <div class="footer-copy">© Copyright Gostar Digital LLC. All Rights Reserved.</div>
@@ -183,7 +173,7 @@ beatTick();
 
 // Starts a real, tracked four-quarter run — a fresh scoreboard, and
 // the player's real name captured before anything launches. Standalone
-// quarter practice (tapping any Q1-Q4 card directly) never sets any
+// half practice (tapping either H1/H2 card directly) never sets any
 // of this, so nothing here ever shows for solo play.
 document.getElementById('fullGameBtn').addEventListener('click',function(){
   document.getElementById('nameScreen').classList.add('show');
@@ -200,7 +190,7 @@ document.getElementById('nameContinueBtn').addEventListener('click',function(){
   }
   sessionStorage.setItem('rct-mobile-player-name',name.slice(0,20));
   sessionStorage.setItem('rct-mobile-fullgame-active','1');
-  sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));
+  sessionStorage.setItem('rct-mobile-half-scores',JSON.stringify({h1:0,h2:0}));
   window.location.href='/002-recall.html';
 });
 document.getElementById('playerNameInput').addEventListener('keydown',function(e){

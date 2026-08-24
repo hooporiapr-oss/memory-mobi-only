@@ -104,20 +104,15 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
     <span style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:1.5px;color:#c9a3fa">🏆 The Handle - View Standings</span>
   </a>
 
-  <div class="game-list" style="grid-template-columns:1fr 1fr;max-width:340px">
-    <a class="quarter-card" href="/002-recall.html">
-      <div class="quarter-num">H1</div>
-      <div class="quarter-name">RECALL</div>
-      <div class="quarter-desc">Watch &middot; Remember &middot; Tap in order</div>
-    </a>
-    <a class="quarter-card" href="/005-recognition.html">
-      <div class="quarter-num">H2</div>
-      <div class="quarter-name">RECOGNITION</div>
-      <div class="quarter-desc">Watch, echo, spot the change</div>
-    </a>
-  </div>
-  <button class="fullgame-btn" id="fullGameBtn">🏀 PLAY THE FULL GAME — TWO HALVES</button>
-  <a class="fullgame-btn" href="/mobile-standings-index.html" style="background:transparent;border:1.5px solid rgba(255,30,60,.4);color:#fff;box-shadow:none;display:block;text-decoration:none">🏆 2 Halves - View Standings</a>
+  <a class="handle-card" href="/005-recognition.html" style="border-color:rgba(154,205,50,.4);background:linear-gradient(135deg,rgba(154,205,50,.14),rgba(184,224,80,.08))">
+    <div class="handle-card-tag" style="color:#c3e08a">MEMORY &middot; ATTENTION</div>
+    <div class="handle-card-name">THE RECOGNITION</div>
+    <div class="handle-card-desc">Watch a pattern flash, then its echo — one cell changed. Spot it before time runs out.</div>
+  </a>
+  <a class="handle-card" href="/mobile-recognition-standings-index.html" style="margin:0 auto 18px;padding:12px 18px;background:rgba(154,205,50,.08);border-color:rgba(154,205,50,.3);display:flex;align-items:center;justify-content:center;gap:8px">
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:1.5px;color:#c3e08a">🏆 The Recognition - View Standings</span>
+  </a>
+
   <div class="hub-foot">Powered by <b>Gostar Digital</b></div>
   <div id="site-footer">
     <div class="footer-copy">© Copyright Gostar Digital LLC. All Rights Reserved.</div>
@@ -125,12 +120,6 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
   </div>
 </div>
 
-<div class="name-screen" id="nameScreen">
-  <div class="name-title">WHO'S <span>PLAYING?</span></div>
-  <div class="name-sub">Enter your name to run all four quarters. Your final score gets tracked on the standings — every player competing for the same board.</div>
-  <input type="text" id="playerNameInput" class="name-input" maxlength="20" placeholder="Your name" autocomplete="off">
-  <button class="fullgame-btn" id="nameContinueBtn" style="max-width:340px;margin:0">▶ Continue</button>
-</div>
 <script>
 var $=function(id){return document.getElementById(id)};
 var BPM=120, beatMs=60000/BPM;
@@ -170,32 +159,6 @@ function spawnDot(){
 }
 setInterval(beatTick, beatMs);
 beatTick();
-
-// Starts a real, tracked four-quarter run — a fresh scoreboard, and
-// the player's real name captured before anything launches. Standalone
-// half practice (tapping either H1/H2 card directly) never sets any
-// of this, so nothing here ever shows for solo play.
-document.getElementById('fullGameBtn').addEventListener('click',function(){
-  document.getElementById('nameScreen').classList.add('show');
-  setTimeout(function(){document.getElementById('playerNameInput').focus()},50);
-});
-document.getElementById('nameContinueBtn').addEventListener('click',function(){
-  var input=document.getElementById('playerNameInput');
-  var name=input.value.trim();
-  if(!name){
-    input.focus();
-    input.style.borderColor='#ff1e3c';
-    setTimeout(function(){input.style.borderColor=''},600);
-    return;
-  }
-  sessionStorage.setItem('rct-mobile-player-name',name.slice(0,20));
-  sessionStorage.setItem('rct-mobile-fullgame-active','1');
-  sessionStorage.setItem('rct-mobile-half-scores',JSON.stringify({h1:0,h2:0}));
-  window.location.href='/002-recall.html';
-});
-document.getElementById('playerNameInput').addEventListener('keydown',function(e){
-  if(e.key==='Enter')document.getElementById('nameContinueBtn').click();
-});
 </script>
 </body>
 </html>

@@ -23,7 +23,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .final-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;text-transform:uppercase;color:#fff;text-shadow:0 0 32px rgba(255,30,60,.7);margin-bottom:26px}
 .final-title span{color:var(--red)}
 
-.qs-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;margin-bottom:22px}
+.qs-board{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:340px;margin:0 auto 22px}
 .qs-cell{border-radius:12px;border:2px solid rgba(255,30,60,.35);background:rgba(255,30,60,.06);padding:16px 4px}
 .qs-label{font-size:.58rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#ffd35a;margin-bottom:5px}
 .qs-val{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#fff}
@@ -58,10 +58,8 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
     <div class="final-title">GAME <span>COMPLETE</span></div>
 
     <div class="qs-board">
-      <div class="qs-cell"><div class="qs-label">1st</div><div class="qs-val" id="fsQ1">0</div></div>
-      <div class="qs-cell"><div class="qs-label">2nd</div><div class="qs-val" id="fsQ2">0</div></div>
-      <div class="qs-cell"><div class="qs-label">3rd</div><div class="qs-val" id="fsQ3">0</div></div>
-      <div class="qs-cell"><div class="qs-label">4th</div><div class="qs-val" id="fsQ4">0</div></div>
+      <div class="qs-cell"><div class="qs-label">1st Half</div><div class="qs-val" id="fsH1">0</div></div>
+      <div class="qs-cell"><div class="qs-label">2nd Half</div><div class="qs-val" id="fsH2">0</div></div>
     </div>
 
     <div class="total-row">
@@ -69,7 +67,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
       <div class="total-val" id="fsTotal">0</div>
     </div>
 
-    <a class="action-btn primary disabled" id="playAgainBtn" href="/002-recall.html">🏀 Play Again — All 4 Quarters</a>
+    <a class="action-btn primary disabled" id="playAgainBtn" href="/002-recall.html">🏀 Play Again — Both Halves</a>
     <a class="action-btn secondary disabled" id="viewStandingsLink" href="/mobile-standings-index.html">🏆 View Standings</a>
     <a class="action-btn secondary disabled" id="backToHubLink" href="/mobile-lab.html">← Back to the Hub</a>
 
@@ -80,27 +78,25 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </div>
 <script>
 (function(){
-function loadQuarterScores(){
-  try{return JSON.parse(sessionStorage.getItem('rct-mobile-quarter-scores')||'{"q1":0,"q2":0,"q3":0,"q4":0}')}
-  catch(e){return {q1:0,q2:0,q3:0,q4:0}}
+function loadHalfScores(){
+  try{return JSON.parse(sessionStorage.getItem('rct-mobile-half-scores')||'{"h1":0,"h2":0}')}
+  catch(e){return {h1:0,h2:0}}
 }
-var scores=loadQuarterScores();
-var total=scores.q1+scores.q2+scores.q3+scores.q4;
-document.getElementById('fsQ1').textContent=scores.q1;
-document.getElementById('fsQ2').textContent=scores.q2;
-document.getElementById('fsQ3').textContent=scores.q3;
-document.getElementById('fsQ4').textContent=scores.q4;
+var scores=loadHalfScores();
+var total=scores.h1+scores.h2;
+document.getElementById('fsH1').textContent=scores.h1;
+document.getElementById('fsH2').textContent=scores.h2;
 document.getElementById('fsTotal').textContent=total;
 
 document.getElementById('playAgainBtn').addEventListener('click',function(){
   sessionStorage.setItem('rct-mobile-fullgame-active','1');
-  sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify({q1:0,q2:0,q3:0,q4:0}));
+  sessionStorage.setItem('rct-mobile-half-scores',JSON.stringify({h1:0,h2:0}));
 });
 
 // ══════════════════════════════════════════════════════
-//  STANDINGS — one single board for the whole four-quarter run, not
-//  per-quarter. Written exactly once, here, the moment a run
-//  genuinely completes — none of the four individual quarter games
+//  STANDINGS — one single board for the whole two-half run, not
+//  per-half. Written exactly once, here, the moment a run
+//  genuinely completes — neither of the two individual half games
 //  write anything to this table themselves.
 //
 //  The save status is shown directly on screen rather than only in
@@ -110,19 +106,17 @@ document.getElementById('playAgainBtn').addEventListener('click',function(){
 // ══════════════════════════════════════════════════════
 var SUPABASE_URL='https://sdaphocueugzfvjovuxd.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
-var SB_TABLE='ritnome_mobile_dynamic_memory_standings';
+var SB_TABLE='ritnome_mobile_2halves_standings';
 var statusEl=document.getElementById('standingsStatus');
 
-// Defensive coercion — if any quarter score ever came through as
+// Defensive coercion — if either half score ever came through as
 // something other than a clean number, sending that straight to an
 // integer NOT NULL column would get the whole insert rejected.
 function toInt(v){ var n=Number(v); return isFinite(n) ? Math.round(n) : 0; }
 var payload={
   player_name:(sessionStorage.getItem('rct-mobile-player-name')||'Player').slice(0,40),
-  q1_score:toInt(scores.q1),
-  q2_score:toInt(scores.q2),
-  q3_score:toInt(scores.q3),
-  q4_score:toInt(scores.q4),
+  h1_score:toInt(scores.h1),
+  h2_score:toInt(scores.h2),
   total_score:toInt(total)
 };
 

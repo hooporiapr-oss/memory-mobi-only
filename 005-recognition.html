@@ -250,7 +250,7 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
 </div>
 <div class="playbook-card">
 <div class="playbook-card-title">⚡ <span id="speedsTitle">BPM SPEEDS</span></div>
-<div class="playbook-step"><div class="playbook-step-num">🏋️</div><div class="playbook-step-text" id="speed1"><strong>Training (60 BPM)</strong> — Slow pattern, 4 seconds to find</div></div>
+<div class="playbook-step"><div class="playbook-step-num">🏋️</div><div class="playbook-step-text" id="speed1"><strong>Practice (60 BPM)</strong> — Slow pattern, 4 seconds to find</div></div>
 <div class="playbook-step"><div class="playbook-step-num">🎯</div><div class="playbook-step-text" id="speed2"><strong>Tempo (90 BPM)</strong> — Faster pattern, ~2.7 seconds</div></div>
 <div class="playbook-step"><div class="playbook-step-num">⚡</div><div class="playbook-step-text" id="speed3"><strong>Elite (120 BPM)</strong> — 2 seconds to find!</div></div>
 <div class="playbook-tip">
@@ -287,7 +287,7 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
 </div>
 <div class="bpm-tier" id="modeTraining" data-mode="training">
 <div class="bpm-tier-header">
-<div class="bpm-tier-left"><span class="bpm-tier-icon">🏋️</span><div class="bpm-tier-info"><div class="bpm-tier-name">TRAINING</div><div class="bpm-tier-bpm">Fixed Level</div></div></div>
+<div class="bpm-tier-left"><span class="bpm-tier-icon">🏋️</span><div class="bpm-tier-info"><div class="bpm-tier-name">PRACTICE</div><div class="bpm-tier-bpm">Fixed Level</div></div></div>
 </div>
 </div>
 </div>
@@ -322,7 +322,7 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
 <div class="timer-wrap" id="timerWrap"><div class="timer-bar" id="timerBar"></div></div>
 <div class="play-court-wrap"><div class="play-court" id="playCourt"></div></div>
 <div class="play-info">
-<div class="play-info-badge" id="playBadge">L1 TRAINING</div>
+<div class="play-info-badge" id="playBadge">L1 PRACTICE</div>
 <div class="play-info-cells" id="playCells">CELLS: 3</div>
 <div class="play-info-score" id="playTotal">0</div>
 </div>
@@ -364,7 +364,7 @@ var translations = {
     step3: '<strong>Tap</strong> the cell that changed before time runs out!', progressionTitle: 'PROGRESSION',
     prog1: 'Get <strong>2 perfect rounds</strong> to level up', prog2: 'Higher levels = <strong>more cells</strong> in the pattern',
     prog3: 'You have <strong>4 beats</strong> to find the change', speedsTitle: 'BPM SPEEDS',
-    speed1: '<strong>Training (60 BPM)</strong> — Slow pattern, 4 seconds to find',
+    speed1: '<strong>Practice (60 BPM)</strong> — Slow pattern, 4 seconds to find',
     speed2: '<strong>Tempo (90 BPM)</strong> — Faster pattern, ~2.7 seconds', speed3: '<strong>Elite (120 BPM)</strong> — 2 seconds to find!',
     tipTitle: 'TIP', tipText: 'Watch for the cell that appears in a NEW position during the echo!',
     playNow: '▶ PLAY NOW', poweredBy: 'Powered by', trophyTitle: 'YOUR PROGRESS', trophySubtitle: 'THE RECOGNITION Levels',
@@ -385,7 +385,7 @@ var translations = {
     step3: '<strong>Toca</strong> la celda que cambió antes de que acabe el tiempo!', progressionTitle: 'PROGRESIÓN',
     prog1: 'Consigue <strong>2 rondas perfectas</strong> para subir de nivel', prog2: 'Niveles más altos = <strong>más celdas</strong> en el patrón',
     prog3: 'Tienes <strong>4 pulsos</strong> para encontrar el cambio', speedsTitle: 'VELOCIDADES BPM',
-    speed1: '<strong>Entrenamiento (60 BPM)</strong> — Patrón lento, 4 segundos', speed2: '<strong>Tempo (90 BPM)</strong> — Más rápido, ~2.7 segundos',
+    speed1: '<strong>Práctica (60 BPM)</strong> — Patrón lento, 4 segundos', speed2: '<strong>Tempo (90 BPM)</strong> — Más rápido, ~2.7 segundos',
     speed3: '<strong>Elite (120 BPM)</strong> — ¡2 segundos!', tipTitle: 'CONSEJO', tipText: '¡Busca la celda que aparece en una posición NUEVA durante el eco!',
     playNow: '▶ JUGAR AHORA', poweredBy: 'Impulsado por', trophyTitle: 'TU PROGRESO', trophySubtitle: 'Niveles de THE RECOGNITION',
     selectSpeed: 'SELECCIONA MODO', tierFree: '✓ GRATIS', selectLevel: 'SELECCIONA NIVEL', cellsLabel: 'Celdas en patrón:',
@@ -595,7 +595,7 @@ function updatePlayUI(){
     $('playRoundLabel').textContent=t('bestLabel');
     $('playRound').textContent=gameState.best;
   }
-  var badge=gameMode==='training'?'L'+trainingLevel+' TRAINING':'GAME';
+  var badge=gameMode==='training'?'L'+trainingLevel+' PRACTICE':'GAME';
   $('playBadge').textContent=badge; $('playCells').textContent='CELLS: '+gameState.cellCount;
 }
 function initGame(){

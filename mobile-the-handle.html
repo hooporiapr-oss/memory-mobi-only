@@ -232,6 +232,10 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 .challenge-result.win{color:var(--gold);text-shadow:0 0 30px var(--gold)}
 .challenge-result.lose{color:#FF6B35;text-shadow:0 0 20px #FF6B35}
 .challenge-stats{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--cream);text-align:center;letter-spacing:2px}
+.qtr-cell{border-radius:10px;border:2px solid rgba(255,20,147,.3);background:rgba(255,20,147,.06);padding:10px 4px;text-align:center}
+.qtr-cell.qtr-current{border-color:var(--hot-pink);background:rgba(255,20,147,.18);box-shadow:0 0 20px rgba(255,20,147,.5)}
+.qtr-label{font-size:.55rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.qtr-val{font-size:1.15rem;font-weight:900;color:var(--cream);font-family:'Bebas Neue',sans-serif}
 .challenge-retry-btn{padding:14px 36px;border:none;border-radius:30px;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;cursor:pointer;background:linear-gradient(135deg,var(--gold),var(--orange));color:#1a0f0f;box-shadow:0 4px 16px rgba(255,215,0,0.35);transition:all 0.3s}
 .challenge-retry-btn:active{transform:scale(0.95)}
 
@@ -347,7 +351,8 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <button class="mode-help-btn" id="howToPlayBtn" style="position:static;transform:none;display:inline-flex;width:auto;height:auto;padding:6px 14px;border-radius:20px;margin:10px auto 0;font-size:11px;letter-spacing:2px">? HOW TO PLAY</button>
 </div>
 
-<button class="start-btn start-btn-big" id="startBtn">🧠 START THE HANDLE</button>
+<button class="start-btn start-btn-big" id="startBtn">🧠 PRACTICE THE HANDLE</button>
+<button class="start-btn start-btn-big" id="startFullGameBtn" style="margin-top:12px;background:linear-gradient(135deg,var(--hot-pink),#ff6b9d)">🏀 PLAY 4 QUARTERS</button>
 </div>
 
 <div class="play-screen hidden" id="playScreen">
@@ -397,6 +402,12 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 
 <div class="challenge-complete" id="challengeComplete">
 <div class="challenge-result" id="challengeResult">YOU WIN!</div>
+<div class="qtr-board" id="qtrBoard" style="display:none;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:340px;margin:0 auto 14px">
+<div class="qtr-cell" id="qtrCell1"><div class="qtr-label">1st</div><div class="qtr-val" id="qtrVal1">0</div></div>
+<div class="qtr-cell" id="qtrCell2"><div class="qtr-label">2nd</div><div class="qtr-val" id="qtrVal2">0</div></div>
+<div class="qtr-cell" id="qtrCell3"><div class="qtr-label">3rd</div><div class="qtr-val" id="qtrVal3">0</div></div>
+<div class="qtr-cell" id="qtrCell4"><div class="qtr-label">4th</div><div class="qtr-val" id="qtrVal4">0</div></div>
+</div>
 <div class="challenge-stats" id="challengeStats"></div>
 <button class="challenge-retry-btn" id="retryBtn">TRY AGAIN!</button>
 <button class="setup-stats-btn" id="endStandingsBtn" style="border:1px solid rgba(255,215,0,.35);border-radius:100px;padding:10px 18px;margin-top:12px;color:var(--gold)">🏆 View Standings</button>
@@ -405,6 +416,11 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <a href="mobile-lab.html" class="setup-stats-btn" id="endHomeLink" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;text-decoration:none;display:inline-block">← Home</a>
 <button class="setup-stats-btn" id="endBackBtn" style="border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px">← Back</button>
 </div>
+</div>
+
+<div class="challenge-complete" id="qtrNotice" style="background:rgba(0,0,0,.94)">
+<div class="challenge-result" id="qtrNoticeTitle">1ST QUARTER COMPLETE!</div>
+<div class="challenge-stats" id="qtrNoticeStats"></div>
 </div>
 <div class="repitelo-indicator" id="repiteloIndicator">🧠 WATCH...</div>
 <div class="repitelo-progress" id="repiteloProgress"></div>
@@ -447,7 +463,13 @@ document.getElementById('howToPlayBtn').addEventListener('touchstart',function(e
 
 function showCountdown(cb){var count=3;countdownOverlay.classList.add('show');countdownNumber.textContent=count;var ci=setInterval(function(){count--;if(count>0){countdownNumber.textContent=count;countdownNumber.style.animation='none';void countdownNumber.offsetWidth;countdownNumber.style.animation='countdownPop 0.8s ease-out';playCongaHit(2,'good')}else if(count===0){countdownNumber.textContent="GO!";countdownNumber.style.animation='none';void countdownNumber.offsetWidth;countdownNumber.style.animation='countdownPop 0.8s ease-out';playCongaRoll()}else{clearInterval(ci);countdownOverlay.classList.remove('show');if(cb)cb()}},1000)}
 
-retryBtn.onclick=function(){showScreen('play');showCountdown(function(){repStart();});};
+retryBtn.onclick=function(){
+  if(currentGameMode==='game'){
+    currentQuarter=1;
+    quarterScores=[0,0,0,0];
+  }
+  showScreen('play');showCountdown(function(){repStart();});
+};
 
 function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}
 
@@ -633,48 +655,106 @@ return true;
 
 function repEndGame(){
 repIsPlaying=false;repIsListening=false;
-var completed=repRound-1;
-challengeResult.textContent=completed>=5?'GOLDEN MEMORY! 🧠':completed>=3?'GREAT JOB! 🔥':'GOOD TRY! 💪';
-challengeResult.className='challenge-result '+(completed>=3?'win':'lose');
-challengeStats.textContent='Score: '+score+' · Rounds: '+completed+' · Best: '+best;
-if(completed>=3){playCongaRoll();launchConfetti();}
-challengeComplete.classList.add('show');
 isPlaying=false;
 repiteloIndicator.className='repitelo-indicator';
 repiteloProgress.classList.remove('show');
 tapCongas.forEach(function(c){c.classList.remove('lit')});
 
-// Navigation stays locked only for the brief window the save is
-// actually in flight — leaving the page (tapping Home or View
-// Standings) can abort a pending request before it completes, which
-// is exactly the class of bug that was silently losing entries here.
-var statusEl=document.getElementById('handleStandingsStatus');
-var standingsBtn=document.getElementById('endStandingsBtn');
-var homeLink=document.getElementById('endHomeLink');
-standingsBtn.classList.add('nav-locked');
-homeLink.classList.add('nav-locked');
-statusEl.textContent='Saving to standings…';
-statusEl.style.color='rgba(255,255,255,.4)';
-
-var navUnlocked=false;
-function unlockNav(){
-  if(navUnlocked)return;
-  navUnlocked=true;
-  standingsBtn.classList.remove('nav-locked');
-  homeLink.classList.remove('nav-locked');
+if(currentGameMode==='practice'){
+  showPracticeScoreboard();
+  return;
 }
-setTimeout(unlockNav,6000);
 
-recordScoreToStandings(currentPlayerName,score,completed,repRound,0,repShotLog).then(function(ok){
-  if(ok){
-    statusEl.textContent='✓ Saved to standings';
-    statusEl.style.color='#00D9A5';
-  }else{
-    statusEl.textContent='⚠ Couldn\'t save — score still stands above, just not on the board';
-    statusEl.style.color='#FF6B35';
+var completed=repRound-1;
+quarterScores[currentQuarter-1]=score;
+
+if(currentQuarter<4){
+  showQuarterNotice(completed);
+}else{
+  showFullGameFinal(completed);
+}
+}
+
+// ── Practice mode: a single, untracked run — just the score, no
+// standings UI, no name ever asked for in the first place.
+function showPracticeScoreboard(){
+  var completed=repRound-1;
+  challengeResult.textContent=completed>=5?'GOLDEN MEMORY! 🧠':completed>=3?'GREAT JOB! 🔥':'GOOD TRY! 💪';
+  challengeResult.className='challenge-result '+(completed>=3?'win':'lose');
+  document.getElementById('qtrBoard').style.display='none';
+  challengeStats.textContent='Score: '+score+' · Rounds: '+completed+' · Best: '+best;
+  document.getElementById('endStandingsBtn').style.display='none';
+  document.getElementById('handleStandingsStatus').style.display='none';
+  if(completed>=3){playCongaRoll();launchConfetti();}
+  challengeComplete.classList.add('show');
+}
+
+// ── Game mode, quarters 1-3: a brief, automatic notice — no button,
+// no navigation risk, just a pause long enough to read the result
+// before the same loop restarts fresh for the next quarter.
+function showQuarterNotice(completed){
+  var labels=['1ST','2ND','3RD','4TH'];
+  document.getElementById('qtrNoticeTitle').textContent=labels[currentQuarter-1]+' QUARTER COMPLETE!';
+  document.getElementById('qtrNoticeStats').textContent='Score: '+score+' · Rounds: '+completed;
+  document.getElementById('qtrNotice').classList.add('show');
+  setTimeout(function(){
+    document.getElementById('qtrNotice').classList.remove('show');
+    currentQuarter++;
+    showScreen('play');
+    showCountdown(function(){repStart()});
+  },2500);
+}
+
+// ── Game mode, quarter 4: the real, tracked end — full Q1-Q4
+// breakdown, the honest save with the same lock-until-saved
+// protection used everywhere else, since leaving mid-save is exactly
+// what silently loses entries.
+function showFullGameFinal(){
+  var total=quarterScores[0]+quarterScores[1]+quarterScores[2]+quarterScores[3];
+  challengeResult.textContent=total>=40?'GOLDEN MEMORY! 🧠':total>=20?'GREAT JOB! 🔥':'GOOD TRY! 💪';
+  challengeResult.className='challenge-result '+(total>=20?'win':'lose');
+  document.getElementById('qtrBoard').style.display='grid';
+  for(var i=1;i<=4;i++){
+    document.getElementById('qtrVal'+i).textContent=quarterScores[i-1];
+    document.getElementById('qtrCell'+i).classList.toggle('qtr-current',i===4);
   }
-  unlockNav();
-});
+  challengeStats.textContent='Final Score: '+total;
+  document.getElementById('endStandingsBtn').style.display='';
+  document.getElementById('handleStandingsStatus').style.display='';
+  playCongaRoll();launchConfetti();
+  challengeComplete.classList.add('show');
+
+  // Navigation stays locked only for the brief window the save is
+  // actually in flight — leaving the page (tapping Home or View
+  // Standings) can abort a pending request before it completes, which
+  // is exactly the class of bug that was silently losing entries here.
+  var statusEl=document.getElementById('handleStandingsStatus');
+  var standingsBtn=document.getElementById('endStandingsBtn');
+  var homeLink=document.getElementById('endHomeLink');
+  standingsBtn.classList.add('nav-locked');
+  homeLink.classList.add('nav-locked');
+  statusEl.textContent='Saving to standings…';
+  statusEl.style.color='rgba(255,255,255,.4)';
+
+  var navUnlocked=false;
+  function unlockNav(){
+    if(navUnlocked)return;
+    navUnlocked=true;
+    standingsBtn.classList.remove('nav-locked');
+    homeLink.classList.remove('nav-locked');
+  }
+  setTimeout(unlockNav,6000);
+
+  recordFullGameToStandings(currentPlayerName,quarterScores[0],quarterScores[1],quarterScores[2],quarterScores[3]).then(function(ok){
+    if(ok){
+      statusEl.textContent='✓ Saved to standings';
+      statusEl.style.color='#00D9A5';
+    }else{
+      statusEl.textContent='⚠ Couldn\'t save — score still stands above, just not on the board';
+      statusEl.style.color='#FF6B35';
+    }
+    unlockNav();
+  });
 }
 
 function repCleanup(){
@@ -782,17 +862,22 @@ standingsScreen.classList.add('show');
 }
 }
 
-// ── standings ──
+// ── standings ── Only the 4-quarter Game mode gets saved — Practice
+// is a single, untracked run with no name and no standings entry.
 var SB_URL='https://sdaphocueugzfvjovuxd.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
-var SB_TABLE='ritnome_mobile_handle_standings';
+var SB_4QTR_TABLE='ritnome_mobile_handle_4qtr_standings';
 var currentPlayerName='';
+var currentGameMode='practice'; // 'practice' or 'game'
+var currentQuarter=1;
+var quarterScores=[0,0,0,0];
 
-function recordScoreToStandings(name,finalScore,made,attempts,avgMs,shots){
-  return fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
+function recordFullGameToStandings(name,q1,q2,q3,q4){
+  var total=q1+q2+q3+q4;
+  return fetch(SB_URL+'/rest/v1/'+SB_4QTR_TABLE,{
     method:'POST',
     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body:JSON.stringify({player_name:name,score:finalScore,made:made,attempts:attempts,avg_ms:avgMs,shots:shots||[]})
+    body:JSON.stringify({player_name:name,q1_score:q1,q2_score:q2,q3_score:q3,q4_score:q4,total_score:total})
   }).then(function(res){
     // fetch() only rejects on a genuine network failure — a rejected
     // insert (bad schema, RLS, etc.) still resolves normally with a
@@ -800,13 +885,13 @@ function recordScoreToStandings(name,finalScore,made,attempts,avgMs,shots){
     // save looks identical to a successful one to the caller.
     if(!res.ok){
       return res.text().then(function(body){
-        console.error('The Handle standings write failed:',res.status,body);
+        console.error('The Handle 4-quarter standings write failed:',res.status,body);
         return false;
       });
     }
     return true;
   }).catch(function(e){
-    console.error('The Handle standings write — network error:',e);
+    console.error('The Handle 4-quarter standings write — network error:',e);
     return false;
   });
 }
@@ -904,6 +989,9 @@ document.getElementById('nameContinueBtn').addEventListener('click',function(){
     return;
   }
   currentPlayerName=name.slice(0,20);
+  currentGameMode='game';
+  currentQuarter=1;
+  quarterScores=[0,0,0,0];
   showScreen('play');
   showCountdown(function(){repStart()});
 });
@@ -911,7 +999,18 @@ document.getElementById('playerNameInput').addEventListener('keydown',function(e
   if(e.key==='Enter')document.getElementById('nameContinueBtn').click();
 });
 
+// Practice — a single, untracked run. No name needed since nothing
+// gets saved, so this goes straight into gameplay.
 startBtn.onclick=function(){
+  initAudio();
+  currentGameMode='practice';
+  showScreen('play');
+  showCountdown(function(){repStart()});
+};
+
+// Play 4 Quarters — the real, tracked Game mode. A name is required
+// up front since this run genuinely gets saved to standings.
+document.getElementById('startFullGameBtn').onclick=function(){
   initAudio();
   var input=document.getElementById('playerNameInput');
   if(currentPlayerName)input.value=currentPlayerName;

@@ -351,8 +351,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <button class="mode-help-btn" id="howToPlayBtn" style="position:static;transform:none;display:inline-flex;width:auto;height:auto;padding:6px 14px;border-radius:20px;margin:10px auto 0;font-size:11px;letter-spacing:2px">? HOW TO PLAY</button>
 </div>
 
-<button class="start-btn start-btn-big" id="startBtn">🧠 PRACTICE THE HANDLE</button>
-<button class="start-btn start-btn-big" id="startFullGameBtn" style="margin-top:12px;background:linear-gradient(135deg,var(--hot-pink),#ff6b9d)">🏀 PLAY 4 QUARTERS</button>
+<button class="start-btn start-btn-big" id="startFullGameBtn">🏀 PLAY 4 QUARTERS</button>
 </div>
 
 <div class="play-screen hidden" id="playScreen">
@@ -447,7 +446,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 
 <script>
 (function(){
-var startBtn=document.getElementById('startBtn'),feedback=document.getElementById('feedback'),streakEl=document.getElementById('streak'),bestEl=document.getElementById('best'),scoreEl=document.getElementById('scoreVal'),congaRow=document.getElementById('congaRow'),confettiContainer=document.getElementById('confettiContainer'),milestone=document.getElementById('milestone'),gameArea=document.querySelector('.game-area');
+var feedback=document.getElementById('feedback'),streakEl=document.getElementById('streak'),bestEl=document.getElementById('best'),scoreEl=document.getElementById('scoreVal'),congaRow=document.getElementById('congaRow'),confettiContainer=document.getElementById('confettiContainer'),milestone=document.getElementById('milestone'),gameArea=document.querySelector('.game-area');
 var tapCongas=[document.getElementById('conga0'),document.getElementById('conga1'),document.getElementById('conga2'),document.getElementById('conga3'),document.getElementById('conga4')];
 var drumCount=5;
 
@@ -464,10 +463,8 @@ document.getElementById('howToPlayBtn').addEventListener('touchstart',function(e
 function showCountdown(cb){var count=3;countdownOverlay.classList.add('show');countdownNumber.textContent=count;var ci=setInterval(function(){count--;if(count>0){countdownNumber.textContent=count;countdownNumber.style.animation='none';void countdownNumber.offsetWidth;countdownNumber.style.animation='countdownPop 0.8s ease-out';playCongaHit(2,'good')}else if(count===0){countdownNumber.textContent="GO!";countdownNumber.style.animation='none';void countdownNumber.offsetWidth;countdownNumber.style.animation='countdownPop 0.8s ease-out';playCongaRoll()}else{clearInterval(ci);countdownOverlay.classList.remove('show');if(cb)cb()}},1000)}
 
 retryBtn.onclick=function(){
-  if(currentGameMode==='game'){
-    currentQuarter=1;
-    quarterScores=[0,0,0,0];
-  }
+  currentQuarter=1;
+  quarterScores=[0,0,0,0];
   showScreen('play');showCountdown(function(){repStart();});
 };
 
@@ -660,11 +657,6 @@ repiteloIndicator.className='repitelo-indicator';
 repiteloProgress.classList.remove('show');
 tapCongas.forEach(function(c){c.classList.remove('lit')});
 
-if(currentGameMode==='practice'){
-  showPracticeScoreboard();
-  return;
-}
-
 var completed=repRound-1;
 quarterScores[currentQuarter-1]=score;
 
@@ -673,20 +665,6 @@ if(currentQuarter<4){
 }else{
   showFullGameFinal(completed);
 }
-}
-
-// ── Practice mode: a single, untracked run — just the score, no
-// standings UI, no name ever asked for in the first place.
-function showPracticeScoreboard(){
-  var completed=repRound-1;
-  challengeResult.textContent=completed>=5?'GOLDEN MEMORY! 🧠':completed>=3?'GREAT JOB! 🔥':'GOOD TRY! 💪';
-  challengeResult.className='challenge-result '+(completed>=3?'win':'lose');
-  document.getElementById('qtrBoard').style.display='none';
-  challengeStats.textContent='Score: '+score+' · Rounds: '+completed+' · Best: '+best;
-  document.getElementById('endStandingsBtn').style.display='none';
-  document.getElementById('handleStandingsStatus').style.display='none';
-  if(completed>=3){playCongaRoll();launchConfetti();}
-  challengeComplete.classList.add('show');
 }
 
 // ── Game mode, quarters 1-3: a brief, automatic notice — no button,
@@ -862,13 +840,12 @@ standingsScreen.classList.add('show');
 }
 }
 
-// ── standings ── Only the 4-quarter Game mode gets saved — Practice
+// ── standings ── Every run is now the tracked 4-quarter Game mode —
 // is a single, untracked run with no name and no standings entry.
 var SB_URL='https://sdaphocueugzfvjovuxd.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
 var SB_4QTR_TABLE='ritnome_mobile_handle_4qtr_standings';
 var currentPlayerName='';
-var currentGameMode='practice'; // 'practice' or 'game'
 var currentQuarter=1;
 var quarterScores=[0,0,0,0];
 
@@ -989,7 +966,6 @@ document.getElementById('nameContinueBtn').addEventListener('click',function(){
     return;
   }
   currentPlayerName=name.slice(0,20);
-  currentGameMode='game';
   currentQuarter=1;
   quarterScores=[0,0,0,0];
   showScreen('play');
@@ -998,15 +974,6 @@ document.getElementById('nameContinueBtn').addEventListener('click',function(){
 document.getElementById('playerNameInput').addEventListener('keydown',function(e){
   if(e.key==='Enter')document.getElementById('nameContinueBtn').click();
 });
-
-// Practice — a single, untracked run. No name needed since nothing
-// gets saved, so this goes straight into gameplay.
-startBtn.onclick=function(){
-  initAudio();
-  currentGameMode='practice';
-  showScreen('play');
-  showCountdown(function(){repStart()});
-};
 
 // Play 4 Quarters — the real, tracked Game mode. A name is required
 // up front since this run genuinely gets saved to standings.

@@ -193,7 +193,7 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
   flex-direction:column;align-items:center;justify-content:center;padding:24px;
 }
 .qs-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--text);margin-bottom:22px;text-align:center}
-.qs-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:420px;margin-bottom:18px}
+.qs-board{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:320px;margin:0 auto 18px}
 .qs-cell{border-radius:10px;border:2px solid rgba(154,205,50,.35);background:rgba(154,205,50,.06);padding:12px 4px;text-align:center}
 .qs-cell.qs-current{border-color:var(--lime);background:rgba(154,205,50,.18);box-shadow:0 0 20px rgba(154,205,50,.5)}
 .qs-label{font-size:.58rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
@@ -343,10 +343,8 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
 <div id="quarterStatsScreen">
   <div class="qs-title" id="qsTitle">4TH QUARTER COMPLETE!</div>
   <div class="qs-board">
-    <div class="qs-cell" id="qsCell1"><div class="qs-label">1st</div><div class="qs-val" id="qsQ1">0</div></div>
-    <div class="qs-cell" id="qsCell2"><div class="qs-label">2nd</div><div class="qs-val" id="qsQ2">0</div></div>
-    <div class="qs-cell" id="qsCell3"><div class="qs-label">3rd</div><div class="qs-val" id="qsQ3">0</div></div>
-    <div class="qs-cell" id="qsCell4"><div class="qs-label">4th</div><div class="qs-val" id="qsQ4">0</div></div>
+    <div class="qs-cell" id="qsCell1"><div class="qs-label">1st Half</div><div class="qs-val" id="qsH1">0</div></div>
+    <div class="qs-cell" id="qsCell2"><div class="qs-label">2nd Half</div><div class="qs-val" id="qsH2">0</div></div>
   </div>
   <div class="qs-total">Total: <span id="qsTotal">0</span></div>
   <button class="qs-next-btn" id="qsNextBtn">SEE FINAL SCORE →</button>
@@ -488,48 +486,45 @@ var LEVEL_CELLS={1:3,2:4,3:5,4:6,5:7};
 var TRAINING_ROUNDS=10;
 var gameMode='game';
 
-var THIS_QUARTER=4;
-var QUARTER_SEQUENCE=[
+var THIS_HALF=2;
+var HALF_SEQUENCE=[
   {n:1,label:'1st',file:'/002-recall.html'},
-  {n:2,label:'2nd',file:'/003-reflex.html'},
-  {n:3,label:'3rd',file:'/004-replay.html'},
-  {n:4,label:'4th',file:'/005-recognition.html'}
+  {n:2,label:'2nd',file:'/005-recognition.html'}
 ];
 function isFullGameActive(){return sessionStorage.getItem('rct-mobile-fullgame-active')==='1'}
-function loadQuarterScores(){
-  try{return JSON.parse(sessionStorage.getItem('rct-mobile-quarter-scores')||'{"q1":0,"q2":0,"q3":0,"q4":0}')}
-  catch(e){return {q1:0,q2:0,q3:0,q4:0}}
+function loadHalfScores(){
+  try{return JSON.parse(sessionStorage.getItem('rct-mobile-half-scores')||'{"h1":0,"h2":0}')}
+  catch(e){return {h1:0,h2:0}}
 }
 function showQuarterStats(finalScore){
-  var scores=loadQuarterScores();
-  scores['q'+THIS_QUARTER]=finalScore;
-  sessionStorage.setItem('rct-mobile-quarter-scores',JSON.stringify(scores));
+  var scores=loadHalfScores();
+  scores['h'+THIS_HALF]=finalScore;
+  sessionStorage.setItem('rct-mobile-half-scores',JSON.stringify(scores));
 
-  // Q4 hands off straight to the real final-score screen — that
-  // screen already shows the exact same Q1-Q4 + total breakdown,
-  // and is also where the standings write actually happens, so
-  // showing this quarter-complete screen here first would just be a
-  // second, redundant scoreboard the player has to click through.
-  if(THIS_QUARTER>=4){
+  // The 2nd half hands off straight to the real final-score screen —
+  // that screen already shows the exact same H1/H2 + total
+  // breakdown, and is also where the standings write actually
+  // happens, so showing this half-complete screen here first would
+  // just be a second, redundant scoreboard the player has to click
+  // through.
+  if(THIS_HALF>=2){
     sessionStorage.setItem('rct-mobile-fullgame-active','0');
     window.location.href='/mobile-final-score.html';
     return;
   }
 
-  var total=scores.q1+scores.q2+scores.q3+scores.q4;
+  var total=scores.h1+scores.h2;
 
-  document.getElementById('qsTitle').textContent=QUARTER_SEQUENCE[THIS_QUARTER-1].label.toUpperCase()+' QUARTER COMPLETE!';
-  document.getElementById('qsQ1').textContent=scores.q1;
-  document.getElementById('qsQ2').textContent=scores.q2;
-  document.getElementById('qsQ3').textContent=scores.q3;
-  document.getElementById('qsQ4').textContent=scores.q4;
+  document.getElementById('qsTitle').textContent=HALF_SEQUENCE[THIS_HALF-1].label.toUpperCase()+' HALF COMPLETE!';
+  document.getElementById('qsH1').textContent=scores.h1;
+  document.getElementById('qsH2').textContent=scores.h2;
   document.getElementById('qsTotal').textContent=total;
-  for(var i=1;i<=4;i++)document.getElementById('qsCell'+i).classList.toggle('qs-current',i===THIS_QUARTER);
+  for(var i=1;i<=2;i++)document.getElementById('qsCell'+i).classList.toggle('qs-current',i===THIS_HALF);
 
   var nextBtn=document.getElementById('qsNextBtn');
-  var nextQ=QUARTER_SEQUENCE[THIS_QUARTER];
-  nextBtn.textContent='NEXT: '+nextQ.label.toUpperCase()+' QUARTER →';
-  nextBtn.onclick=function(){window.location.href=nextQ.file};
+  var nextH=HALF_SEQUENCE[THIS_HALF];
+  nextBtn.textContent='NEXT: '+nextH.label.toUpperCase()+' HALF →';
+  nextBtn.onclick=function(){window.location.href=nextH.file};
   document.getElementById('quarterStatsScreen').style.display='flex';
 }
 var trainingLevel=1;

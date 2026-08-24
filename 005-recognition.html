@@ -187,21 +187,21 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
 @media(max-height:550px){.demo-court{width:180px;height:180px}.play-court-wrap{max-width:260px}.play-stat-value{font-size:1.3rem}.play-message-text{font-size:.8rem}.play-action-btn{padding:10px;font-size:1rem}}
 @media(max-width:360px){.play-court-wrap{max-width:280px}.play-court{gap:3px;padding:6px}.demo-court{width:180px;height:180px}}
 
-#quarterStatsScreen{
-  display:none;position:fixed;inset:0;z-index:300;
-  background:var(--dark);
-  flex-direction:column;align-items:center;justify-content:center;padding:24px;
-}
-.qs-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--text);margin-bottom:22px;text-align:center}
-.qs-board{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:320px;margin:0 auto 18px}
-.qs-cell{border-radius:10px;border:2px solid rgba(154,205,50,.35);background:rgba(154,205,50,.06);padding:12px 4px;text-align:center}
-.qs-cell.qs-current{border-color:var(--lime);background:rgba(154,205,50,.18);box-shadow:0 0 20px rgba(154,205,50,.5)}
-.qs-label{font-size:.58rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
-.qs-val{font-size:1.35rem;font-weight:900;color:var(--text);font-family:'Bebas Neue',sans-serif}
-.qs-total{font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--gold);margin-bottom:24px}
-.qs-total span{font-size:1.5rem;color:var(--text);margin-left:8px;font-family:'Bebas Neue',sans-serif}
-.qs-next-btn{width:100%;max-width:400px;min-height:56px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--lime),var(--lime-light));color:var(--dark);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(154,205,50,.6)}
-.qs-next-btn:active{transform:scale(.98)}
+.name-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 20px);min-height:calc(100dvh - 20px);text-align:center;padding:16px 24px;position:fixed;inset:0;z-index:400;background:var(--dark)}
+.name-screen.show{display:flex}
+.name-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:5px;color:var(--lime);margin-bottom:6px}
+.name-sub{font-size:13px;color:rgba(255,255,255,.5);max-width:320px;margin-bottom:24px;line-height:1.5}
+.name-input{width:100%;max-width:320px;padding:16px;border-radius:16px;border:2px solid rgba(154,205,50,.4);background:rgba(255,255,255,.06);color:var(--text);font-family:'Outfit',sans-serif;font-size:1.1rem;text-align:center;margin-bottom:16px}
+.name-input:focus{outline:none;border-color:var(--lime)}
+
+.challenge-complete{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px}
+.challenge-complete.show{display:flex}
+.challenge-result{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:2px;text-align:center;color:var(--lime);text-shadow:0 0 25px rgba(154,205,50,.6)}
+.challenge-stats{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:var(--text);text-align:center;letter-spacing:1px}
+.challenge-retry-btn{padding:14px 34px;border:none;border-radius:30px;font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:2px;cursor:pointer;background:linear-gradient(135deg,var(--lime),var(--lime-light));color:var(--dark);box-shadow:0 4px 16px rgba(154,205,50,.35)}
+.challenge-retry-btn:active{transform:scale(.96)}
+.setup-stats-btn{background:none;font-family:'Outfit',sans-serif;border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:10px 18px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.nav-locked{opacity:.35;pointer-events:none}
 </style>
 </head>
 <body>
@@ -340,14 +340,23 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
 <div class="emoji-container" id="emojiContainer"></div>
 <div class="coach-message" id="coachMessage"></div>
 
-<div id="quarterStatsScreen">
-  <div class="qs-title" id="qsTitle">4TH QUARTER COMPLETE!</div>
-  <div class="qs-board">
-    <div class="qs-cell" id="qsCell1"><div class="qs-label">1st Half</div><div class="qs-val" id="qsH1">0</div></div>
-    <div class="qs-cell" id="qsCell2"><div class="qs-label">2nd Half</div><div class="qs-val" id="qsH2">0</div></div>
-  </div>
-  <div class="qs-total">Total: <span id="qsTotal">0</span></div>
-  <button class="qs-next-btn" id="qsNextBtn">SEE FINAL SCORE →</button>
+<div class="name-screen" id="nameScreen">
+<div class="name-title">WHO'S PLAYING?</div>
+<div class="name-sub">Enter your name so your score can land on the standings board.</div>
+<input type="text" id="playerNameInput" class="name-input" maxlength="20" placeholder="Your name" autocomplete="off">
+<button class="letsgo-btn" id="nameContinueBtn" style="max-width:320px">▶ Continue</button>
+</div>
+
+<div class="challenge-complete" id="challengeComplete">
+<div class="challenge-result" id="challengeResult">GAME OVER</div>
+<div class="challenge-stats" id="challengeStats"></div>
+<button class="challenge-retry-btn" id="retryBtn">TRY AGAIN!</button>
+<button class="setup-stats-btn" id="endStandingsBtn" style="border:1px solid rgba(154,205,50,.4);color:var(--lime)">🏆 View Standings</button>
+<div id="recognitionStandingsStatus" style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.4)">Saving to standings…</div>
+<div style="display:flex;gap:12px;margin-top:6px">
+<a href="/mobile-lab.html" class="setup-stats-btn" id="endHomeLink">← Home</a>
+<button class="setup-stats-btn" id="endBackBtn">← Back</button>
+</div>
 </div>
 <script>
 (function(){
@@ -486,46 +495,35 @@ var LEVEL_CELLS={1:3,2:4,3:5,4:6,5:7};
 var TRAINING_ROUNDS=10;
 var gameMode='game';
 
-var THIS_HALF=2;
-var HALF_SEQUENCE=[
-  {n:1,label:'1st',file:'/002-recall.html'},
-  {n:2,label:'2nd',file:'/005-recognition.html'}
-];
-function isFullGameActive(){return sessionStorage.getItem('rct-mobile-fullgame-active')==='1'}
-function loadHalfScores(){
-  try{return JSON.parse(sessionStorage.getItem('rct-mobile-half-scores')||'{"h1":0,"h2":0}')}
-  catch(e){return {h1:0,h2:0}}
-}
-function showQuarterStats(finalScore){
-  var scores=loadHalfScores();
-  scores['h'+THIS_HALF]=finalScore;
-  sessionStorage.setItem('rct-mobile-half-scores',JSON.stringify(scores));
+// ── standings ── Only Game mode runs are tracked and saved — Practice
+// mode is an explicit fixed-length, user-picked-level session, not a
+// fair endless-escalation score to rank against everyone else's.
+var SB_URL='https://sdaphocueugzfvjovuxd.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+var SB_TABLE='ritnome_mobile_recognition_standings';
+var currentPlayerName='';
 
-  // The 2nd half hands off straight to the real final-score screen —
-  // that screen already shows the exact same H1/H2 + total
-  // breakdown, and is also where the standings write actually
-  // happens, so showing this half-complete screen here first would
-  // just be a second, redundant scoreboard the player has to click
-  // through.
-  if(THIS_HALF>=2){
-    sessionStorage.setItem('rct-mobile-fullgame-active','0');
-    window.location.href='/mobile-final-score.html';
-    return;
-  }
-
-  var total=scores.h1+scores.h2;
-
-  document.getElementById('qsTitle').textContent=HALF_SEQUENCE[THIS_HALF-1].label.toUpperCase()+' HALF COMPLETE!';
-  document.getElementById('qsH1').textContent=scores.h1;
-  document.getElementById('qsH2').textContent=scores.h2;
-  document.getElementById('qsTotal').textContent=total;
-  for(var i=1;i<=2;i++)document.getElementById('qsCell'+i).classList.toggle('qs-current',i===THIS_HALF);
-
-  var nextBtn=document.getElementById('qsNextBtn');
-  var nextH=HALF_SEQUENCE[THIS_HALF];
-  nextBtn.textContent='NEXT: '+nextH.label.toUpperCase()+' HALF →';
-  nextBtn.onclick=function(){window.location.href=nextH.file};
-  document.getElementById('quarterStatsScreen').style.display='flex';
+function recordScoreToStandings(name,finalScore,made,attempts){
+  return fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({player_name:name,score:finalScore,made:made,attempts:attempts})
+  }).then(function(res){
+    // fetch() only rejects on a genuine network failure — a rejected
+    // insert (bad schema, RLS, etc.) still resolves normally with a
+    // non-2xx status, so this MUST be checked explicitly or a failed
+    // save looks identical to a successful one to the caller.
+    if(!res.ok){
+      return res.text().then(function(body){
+        console.error('Recognition standings write failed:',res.status,body);
+        return false;
+      });
+    }
+    return true;
+  }).catch(function(e){
+    console.error('Recognition standings write — network error:',e);
+    return false;
+  });
 }
 var trainingLevel=1;
 function getInitialCellCount(){return gameMode==='training'?LEVEL_CELLS[trainingLevel]:STARTING_CELLS}
@@ -771,14 +769,16 @@ function showFinalScore(){
   isPlaying=false;canTap=false;phase='idle';stopFullStrobe();hideTimer();clearAllCells();
   updatePlayUI();
   if(gameMode==='training'){
+    // Practice mode ending early (a miss before finishing all rounds)
+    // — never tracked, never saved, so this stays exactly the simple
+    // inline message it always was.
     $('playMessage').textContent=gameState.roundsDone+'/'+TRAINING_ROUNDS+' — L'+trainingLevel+' — '+gameState.sc;
-  }else{
-    $('playMessage').textContent=t('gameOver')+' '+gameState.sc+' (BEST '+gameState.best+')';
+    $('playMessage').className='play-message-text miss';
+    $('playActionBtn').textContent=t('letsGo');$('playActionBtn').onclick=restartGame;
+    $('playActionBtn').disabled=false;
+    return;
   }
-  $('playMessage').className='play-message-text miss';
-  $('playActionBtn').textContent=t('letsGo');$('playActionBtn').onclick=restartGame;
-  $('playActionBtn').disabled=false;
-  if(isFullGameActive())showQuarterStats(gameState.sc);
+  showTrackedGameOver(false);
 }
 function showTrainingComplete(){
   isPlaying=false;canTap=false;phase='idle';stopFullStrobe();hideTimer();clearAllCells();
@@ -788,8 +788,64 @@ function showTrainingComplete(){
   $('playMessage').className='play-message-text perfect';
   $('playActionBtn').textContent=t('letsGo');$('playActionBtn').onclick=restartGame;
   $('playActionBtn').disabled=false;
-  if(isFullGameActive())showQuarterStats(gameState.sc);
 }
+
+// ══════════════════════════════════════════════════════
+//  GAME MODE END — a real, tracked, standalone endless run, matching
+//  The Handle's own pattern exactly: a name captured before playing,
+//  an honest save with the result genuinely visible on screen, and
+//  navigation locked only for the brief window that save is
+//  actually in flight (leaving the page mid-save is exactly what
+//  silently loses entries).
+// ══════════════════════════════════════════════════════
+function showTrackedGameOver(){
+  var completed=gameState.best;
+  document.getElementById('challengeResult').textContent=completed>=8?'SHARP EYES! 👂':completed>=4?'NICE RUN! 🔥':'GOOD TRY! 💪';
+  document.getElementById('challengeStats').textContent='Score: '+gameState.sc+' · Best Pattern: '+completed;
+  document.getElementById('challengeComplete').classList.add('show');
+
+  var statusEl=document.getElementById('recognitionStandingsStatus');
+  var standingsBtn=document.getElementById('endStandingsBtn');
+  var homeLink=document.getElementById('endHomeLink');
+  standingsBtn.classList.add('nav-locked');
+  homeLink.classList.add('nav-locked');
+  statusEl.textContent='Saving to standings…';
+  statusEl.style.color='rgba(255,255,255,.4)';
+
+  var navUnlocked=false;
+  function unlockNav(){
+    if(navUnlocked)return;
+    navUnlocked=true;
+    standingsBtn.classList.remove('nav-locked');
+    homeLink.classList.remove('nav-locked');
+  }
+  setTimeout(unlockNav,6000);
+
+  recordScoreToStandings(currentPlayerName,gameState.sc,completed,gameState.roundsDone||completed).then(function(ok){
+    if(ok){
+      statusEl.textContent='✓ Saved to standings';
+      statusEl.style.color='#00D9A5';
+    }else{
+      statusEl.textContent='⚠ Couldn\'t save — score still stands above, just not on the board';
+      statusEl.style.color='#FF6B35';
+    }
+    unlockNav();
+  });
+}
+document.getElementById('retryBtn').addEventListener('click',function(){
+  document.getElementById('challengeComplete').classList.remove('show');
+  showScreen('play');
+  restartGame();
+  startRound();
+});
+document.getElementById('endBackBtn').addEventListener('click',function(){
+  document.getElementById('challengeComplete').classList.remove('show');
+  showScreen('trophy');
+});
+document.getElementById('endStandingsBtn').addEventListener('click',function(){
+  window.location.href='/mobile-recognition-standings-index.html';
+});
+
 function restartGame(){
   clearAllTimers();stopFullStrobe();isPlaying=false;canTap=false;phase='idle';
   gameState={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
@@ -799,13 +855,35 @@ function restartGame(){
   $('playActionBtn').disabled=false;
 }
 $('playActionBtn').onclick=startRound;
-initDemoCourt(); updateUILanguage();
-if(isFullGameActive()){
-  showScreen('play');
-  initGame();
-}else{
-  startDemo();
-}
+
+// Name is only ever asked for Game mode — Practice is a fixed,
+// untracked session with no standings entry to attribute.
+$('letsGoBtn').onclick=function(){
+  if(gameMode==='training'){
+    showScreen('play');initGame();
+    return;
+  }
+  document.getElementById('nameScreen').classList.add('show');
+  setTimeout(function(){document.getElementById('playerNameInput').focus()},50);
+};
+document.getElementById('nameContinueBtn').addEventListener('click',function(){
+  var input=document.getElementById('playerNameInput');
+  var name=input.value.trim();
+  if(!name){
+    input.focus();
+    input.style.borderColor='#ff4444';
+    setTimeout(function(){input.style.borderColor=''},600);
+    return;
+  }
+  currentPlayerName=name.slice(0,20);
+  document.getElementById('nameScreen').classList.remove('show');
+  showScreen('play');initGame();
+});
+document.getElementById('playerNameInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('nameContinueBtn').click();
+});
+
+initDemoCourt(); updateUILanguage(); startDemo();
 })();
 </script>
 </body>

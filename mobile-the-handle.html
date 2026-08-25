@@ -34,6 +34,18 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 .container{max-width:500px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px) 16px 20px;min-height:100dvh;display:flex;flex-direction:column}
 
 /* Hero */
+.setup-screen{background:var(--dark);min-height:100vh;min-height:100dvh}
+.intro-nav-row{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:440px;margin-bottom:8px}
+.intro-nav-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--gold)}
+.intro-badge{display:inline-block;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.3);color:var(--gold);font-family:'Outfit',sans-serif;font-size:.62rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:10px}
+.intro-title{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:6px;color:var(--gold);line-height:1}
+.intro-playbook-btn{width:100%;max-width:400px;padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.intro-playbook-btn:active{border-color:var(--gold);background:rgba(255,215,0,.06)}
+.intro-footer{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid var(--border);margin-top:8px}
+.intro-footer-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse-dot 1.6s ease-in-out infinite}
+.intro-footer-text{font-family:'Outfit',sans-serif;font-size:.68rem;color:var(--muted);font-weight:600}
+.intro-footer-text b{color:var(--text);font-style:normal}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
 .bori-hero{text-align:center;padding:4px 0 8px;position:relative}
 .bori-hero-title{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:6px;background:linear-gradient(135deg,var(--gold),var(--orange),var(--hot-pink),var(--gold));background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite;line-height:1}
 .bori-hero-sub{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:3px;text-transform:uppercase;margin-top:2px}
@@ -299,7 +311,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 .powered-strip{text-align:center;padding:12px 0;margin-top:10px;opacity:0.4}
 .powered-strip span{font-family:'Bebas Neue',sans-serif;font-size:0.7rem;color:var(--gold);letter-spacing:2px}
 
-.name-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 20px);min-height:calc(100dvh - 20px);text-align:center;padding:16px 0}
+.name-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 20px);min-height:calc(100dvh - 20px);text-align:center;padding:16px 0;background:var(--dark);position:relative}
 .name-screen.show{display:flex}
 .name-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:5px;color:var(--gold);margin-bottom:6px}
 .name-sub{font-size:13px;color:rgba(255,255,255,.5);max-width:320px;margin-bottom:24px;line-height:1.5}
@@ -333,7 +345,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 .tap-log-total{width:100%;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:var(--gold);margin-top:4px}
 .tap-log-empty{width:100%;text-align:center;color:rgba(255,255,255,.4);font-size:.8rem;padding:8px}
 
-@media(min-width:400px){.bori-hero-title{font-size:2.8rem}.conga-row{width:320px;height:320px}.tap-conga{width:80px;height:80px}.conga-row.three-drums{width:280px;height:210px}.conga-row.three-drums .tap-conga{width:80px;height:80px}}
+@media(min-width:400px){.bori-hero-title{font-size:2.8rem}.intro-title{font-size:2.8rem}.conga-row{width:320px;height:320px}.tap-conga{width:80px;height:80px}.conga-row.three-drums{width:280px;height:210px}.conga-row.three-drums .tap-conga{width:80px;height:80px}}
 </style>
 </head>
 <body>
@@ -344,14 +356,24 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <div class="container">
 
 <div class="setup-screen" id="setupScreen">
-<a href="mobile-lab.html" class="standings-back-btn" style="align-self:flex-start;margin-bottom:4px;text-decoration:none">←</a>
+<div class="intro-nav-row">
+<a href="mobile-lab.html" class="back-btn">← Back</a>
+<div class="intro-nav-title">THE HANDLE</div>
+<div style="width:68px"></div>
+</div>
 <div class="bori-hero">
-<div class="bori-hero-title">THE HANDLE</div>
+<div class="intro-badge">FREE</div>
+<div class="intro-title">THE HANDLE</div>
 <div class="bori-hero-sub">Watch. Remember. Repeat.</div>
-<button class="mode-help-btn" id="howToPlayBtn" style="position:static;transform:none;display:inline-flex;width:auto;height:auto;padding:6px 14px;border-radius:20px;margin:10px auto 0;font-size:11px;letter-spacing:2px">? HOW TO PLAY</button>
 </div>
 
+<button class="intro-playbook-btn" id="howToPlayBtn">📖 How to Play</button>
 <button class="start-btn start-btn-big" id="startFullGameBtn">🏀 PLAY 4 QUARTERS</button>
+
+<div class="intro-footer">
+<div class="intro-footer-dot"></div>
+<div class="intro-footer-text">Powered by <b>Gostar Digital</b></div>
+</div>
 </div>
 
 <div class="play-screen hidden" id="playScreen">
@@ -383,6 +405,11 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 </div>
 
 <div class="name-screen" id="nameScreen">
+<div class="intro-nav-row" style="position:absolute;top:16px;left:16px;right:16px;width:auto;margin:0">
+<a href="mobile-lab.html" class="back-btn">← Back</a>
+<div class="intro-nav-title">THE HANDLE</div>
+<div style="width:68px"></div>
+</div>
 <div class="name-title">WHO'S PLAYING?</div>
 <div class="name-sub">Enter your name so your score can land on the standings board.</div>
 <input type="text" id="playerNameInput" class="name-input" maxlength="20" placeholder="Your name" autocomplete="off">

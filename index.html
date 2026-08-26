@@ -89,7 +89,7 @@ function tryEnter(){
   $('gate-err').textContent = 'Checking…';
 
   var url = SUPABASE_URL + '/rest/v1/licenses'
-    + '?select=code,expires_at,active,product'
+    + '?select=code,expires_at,active,product,school_name'
     + '&code=ilike.' + encodeURIComponent(input)
     + '&active=eq.true'
     + '&product=eq.' + PRODUCT;
@@ -111,9 +111,14 @@ function tryEnter(){
       if (new Date() > exp){ return reject('This license has expired'); }
     }
 
-    // valid → unlock this device permanently, then enter
+    // valid → unlock this device permanently, then enter. The school
+    // name travels with the device from here on — this is the only
+    // place it's ever captured, so every game and every standings
+    // view downstream just reads it back from here rather than each
+    // needing its own separate code/login of its own.
     localStorage.setItem('rct-mobile-pass','1');
     localStorage.setItem('rct-mobile-license', input.toUpperCase());
+    localStorage.setItem('rct-mobile-school', lic.school_name || '');
     window.location.href = 'mobile-lab.html';
   })
   .catch(function(){

@@ -346,6 +346,7 @@ html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',san
   </div>
   <div class="qs-total">Total: <span id="qsTotal">0</span></div>
   <button class="qs-next-btn" id="qsNextBtn">SEE FINAL SCORE →</button>
+  <button id="switchCodeBtn" style="margin:14px auto 0;padding:10px 16px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;display:block">🔄 Switch School / Enter New Code</button>
 </div>
 <div class="emoji-container" id="emojiContainer"></div>
 <div class="coach-message" id="coachMessage"></div>
@@ -802,6 +803,17 @@ if(isFullGameActive()){
 }else{
   startDemo();
 }
+
+document.getElementById('switchCodeBtn').addEventListener('click',function(){
+  if(!confirm('Switch to a new school or code? You\'ll need a new access code to get back in.'))return;
+  localStorage.removeItem('rct-mobile-pass');
+  localStorage.removeItem('rct-mobile-license');
+  localStorage.removeItem('rct-mobile-school');
+  sessionStorage.removeItem('rct-mobile-fullgame-active');
+  sessionStorage.removeItem('rct-mobile-quarter-scores');
+  sessionStorage.removeItem('rct-mobile-player-name');
+  window.location.href='/index.html';
+});
 })();
 </script>
 </body>

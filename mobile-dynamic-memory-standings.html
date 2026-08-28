@@ -8,7 +8,7 @@ if (sessionStorage.getItem('mobile-standings-gate-pass') !== '1') {
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>2 Halves — Standings</title>
+<title>4 Quarters — Standings</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -41,7 +41,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 .standings-name{flex:1;font-weight:700;font-size:.95rem;color:var(--text);text-align:left;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .standings-pts{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);flex-shrink:0;min-width:50px;text-align:right}
 
-.qtr-detail{display:none;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 4px 6px}
+.qtr-detail{display:none;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 4px 6px}
 .qtr-detail.show{display:grid}
 .qtr-cell{border-radius:10px;border:2px solid rgba(255,30,60,.3);background:rgba(255,30,60,.05);padding:10px 4px;text-align:center}
 .qtr-label{font-size:.55rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
@@ -59,8 +59,8 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 </div>
 </nav>
 <div class="container">
-<div class="page-title">2 HALVES</div>
-<div class="page-sub">Recall, Recognition — ranked by combined total</div>
+<div class="page-title">4 QUARTERS</div>
+<div class="page-sub">Recall, Reflex, Replay, Recognition — ranked by combined total</div>
 <div class="standings-list" id="standingsList"></div>
 </div>
 
@@ -68,14 +68,14 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);col
 (function(){
 var SUPABASE_URL='https://sdaphocueugzfvjovuxd.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
-var HALVES_TABLE='ritnome_mobile_2halves_standings';
+var QUARTERS_TABLE='ritnome_mobile_dynamic_memory_standings';
 
 function escapeHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function fetchHalvesStandings(){
-  var url=SUPABASE_URL+'/rest/v1/'+HALVES_TABLE+'?select=player_name,h1_score,h2_score,total_score&order=total_score.desc&limit=100';
+function fetchQuartersStandings(){
+  var url=SUPABASE_URL+'/rest/v1/'+QUARTERS_TABLE+'?select=player_name,q1_score,q2_score,q3_score,q4_score,total_score&order=total_score.desc&limit=100';
   return fetch(url,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}})
     .then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})
     .then(function(rows){
@@ -90,7 +90,7 @@ function fetchHalvesStandings(){
 function renderStandings(){
   var listEl=document.getElementById('standingsList');
   listEl.innerHTML='<div class="box-empty">Loading standings…</div>';
-  fetchHalvesStandings().then(function(ranked){
+  fetchQuartersStandings().then(function(ranked){
     if(!ranked.length){
       listEl.innerHTML='<div class="box-empty">No players yet — be the first name on the board.</div>';
       return;
@@ -105,8 +105,10 @@ function renderStandings(){
           +'<span class="standings-pts">'+p.total_score+'</span>'
         +'</div>'
         +'<div class="qtr-detail" id="detail-'+i+'">'
-          +'<div class="qtr-cell"><div class="qtr-label">1st Half</div><div class="qtr-val">'+p.h1_score+'</div></div>'
-          +'<div class="qtr-cell"><div class="qtr-label">2nd Half</div><div class="qtr-val">'+p.h2_score+'</div></div>'
+          +'<div class="qtr-cell"><div class="qtr-label">1st</div><div class="qtr-val">'+p.q1_score+'</div></div>'
+          +'<div class="qtr-cell"><div class="qtr-label">2nd</div><div class="qtr-val">'+p.q2_score+'</div></div>'
+          +'<div class="qtr-cell"><div class="qtr-label">3rd</div><div class="qtr-val">'+p.q3_score+'</div></div>'
+          +'<div class="qtr-cell"><div class="qtr-label">4th</div><div class="qtr-val">'+p.q4_score+'</div></div>'
         +'</div>'
       +'</div>';
     }).join('');

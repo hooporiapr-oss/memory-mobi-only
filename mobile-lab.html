@@ -104,8 +104,6 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
     <span style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:1.5px;color:#c9a3fa">🏆 The Handle - View Standings</span>
   </a>
 
-  <button id="switchCodeBtn" style="margin:0 auto 18px;padding:10px 16px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;display:block">🔄 Switch School / Enter New Code</button>
-
   <div class="handle-label">Four Quarters</div>
   <div class="game-list">
     <a class="quarter-card" href="002-recall.html">
@@ -185,20 +183,6 @@ function spawnDot(){
 }
 setInterval(beatTick, beatMs);
 beatTick();
-
-// The device unlock is otherwise permanent by design (enter a code
-// once, never asked again) — this is the one, visible way to
-// deliberately back out of that and enter a different code, without
-// needing any browser/settings knowledge at all. A confirm dialog
-// guards against an accidental tap locking someone out of the game
-// with no new code in hand yet.
-document.getElementById('switchCodeBtn').addEventListener('click',function(){
-  if(!confirm('Switch to a new school or code? You\'ll need a new access code to get back in.'))return;
-  localStorage.removeItem('rct-mobile-pass');
-  localStorage.removeItem('rct-mobile-license');
-  localStorage.removeItem('rct-mobile-school');
-  window.location.href='/index.html';
-});
 
 // Starts a real, tracked four-quarter run — a fresh scoreboard, and
 // the player's real name captured before anything launches. Standalone

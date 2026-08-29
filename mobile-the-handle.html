@@ -8,7 +8,7 @@ if (localStorage.getItem('rct-mobile-pass') !== '1') {
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>THE HANDLE | Ritnome Memory</title>
+<title>THE FORTRESS | Ritnome Memory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <div class="setup-screen" id="setupScreen">
 <div class="intro-nav-row">
 <a href="mobile-lab.html" class="back-btn">← Back</a>
-<div class="intro-nav-title">THE HANDLE</div>
+<div class="intro-nav-title">THE FORTRESS</div>
 <div style="width:68px"></div>
 </div>
 <div class="bori-hero">
-<div class="intro-title">THE HANDLE</div>
+<div class="intro-title">THE FORTRESS</div>
 <div class="bori-hero-sub">Watch. Remember. Repeat.</div>
 </div>
 
@@ -410,7 +410,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <div class="name-screen" id="nameScreen">
 <div class="intro-nav-row" style="position:absolute;top:16px;left:16px;right:16px;width:auto;margin:0">
 <a href="mobile-lab.html" class="back-btn">← Back</a>
-<div class="intro-nav-title">THE HANDLE</div>
+<div class="intro-nav-title">THE FORTRESS</div>
 <div style="width:68px"></div>
 </div>
 <div class="name-title">WHO'S PLAYING?</div>
@@ -776,7 +776,7 @@ var helpOverlay=document.getElementById('helpOverlay');
 var helpLang='en';
 var helpData={
 en:{
-icon:'🧠',title:'THE HANDLE',
+icon:'🧠',title:'THE FORTRESS',
 steps:[
 "A sequence of balls lights up — watch and listen!",
 'When you see "YOUR TURN!" repeat the exact sequence',
@@ -786,7 +786,7 @@ steps:[
 tip:'💡 Always 5 balls, always 120 BPM — same test every time, so your best round actually means something.'
 },
 es:{
-icon:'🧠',title:'THE HANDLE',
+icon:'🧠',title:'THE FORTRESS',
 steps:[
 '¡Una secuencia de balones se ilumina — mira y escucha!',
 'Cuando veas "¡TU TURNO!" repite la secuencia exacta',
@@ -848,7 +848,7 @@ var playBackBtn=document.getElementById('playBackBtn');
 var playModeName=document.getElementById('playModeName');
 var playBpmLabel=document.getElementById('playBpmLabel');
 
-var MODE_LABELS={repitelo:'THE HANDLE'};
+var MODE_LABELS={repitelo:'THE FORTRESS'};
 function showScreen(name){
 setupScreen.style.display='none';
 playScreen.classList.add('hidden');
@@ -860,7 +860,7 @@ if(name==='setup'){
 setupScreen.style.display='flex';
 }else if(name==='play'){
 playScreen.classList.remove('hidden');
-playModeName.textContent=MODE_LABELS[currentMode]||'THE HANDLE';
+playModeName.textContent=MODE_LABELS[currentMode]||'THE FORTRESS';
 playBpmLabel.textContent=bpm+' BPM';
 window.scrollTo(0,0);
 }else if(name==='name'){
@@ -894,13 +894,13 @@ function recordFullGameToStandings(name,q1,q2,q3,q4){
     // save looks identical to a successful one to the caller.
     if(!res.ok){
       return res.text().then(function(body){
-        console.error('The Handle 4-quarter standings write failed:',res.status,body);
+        console.error('The Fortress 4-quarter standings write failed:',res.status,body);
         return false;
       });
     }
     return true;
   }).catch(function(e){
-    console.error('The Handle 4-quarter standings write — network error:',e);
+    console.error('The Fortress 4-quarter standings write — network error:',e);
     return false;
   });
 }

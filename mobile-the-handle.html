@@ -267,7 +267,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 .rep-dot.current{transform:scale(1.3);box-shadow:0 0 12px rgba(255,215,0,.5)}
 
 /* Countdown */
-.countdown-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:250}
+.countdown-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:250;pointer-events:none}
 .countdown-overlay.show{display:flex}
 .countdown-number{font-family:'Bebas Neue',sans-serif;font-size:7rem;color:var(--gold);text-shadow:0 0 40px var(--gold),0 0 80px var(--orange);animation:countdownPop 0.8s ease-out}
 @keyframes countdownPop{0%{transform:scale(2);opacity:0}50%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
@@ -996,7 +996,7 @@ document.getElementById('endStandingsBtn').addEventListener('click',function(){
   renderStandings();
 });
 document.getElementById('standingsBackBtn').addEventListener('click',function(){
-  window.location.href='/mobile-lab.html';
+  window.location.href='mobile-lab.html';
 });
 document.getElementById('standingsRefreshBtn').addEventListener('click',function(){
   renderStandings();

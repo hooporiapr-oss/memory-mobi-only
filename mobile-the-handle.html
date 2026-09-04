@@ -147,7 +147,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 .play-screen{display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - 20px);min-height:calc(100dvh - 20px)}
 .play-screen.hidden{display:none}
 .play-header{display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 0 12px}
-.play-back-btn{background:none;border:2px solid rgba(255,255,255,.15);border-radius:50%;width:36px;height:36px;color:var(--cream);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.play-back-btn{background:none;border:2px solid rgba(255,255,255,.15);border-radius:50%;width:36px;height:36px;color:var(--cream);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;text-decoration:none}
 .play-back-btn:active{background:rgba(255,255,255,.1)}
 .play-mode-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:var(--teal)}
 .play-bpm{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;color:rgba(255,255,255,.4)}
@@ -381,7 +381,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 
 <div class="play-screen hidden" id="playScreen">
 <div class="play-header">
-<button class="play-back-btn" id="playBackBtn">✕</button>
+<a href="mobile-lab.html" class="play-back-btn" id="playBackBtn" title="Home">⌂</a>
 <div class="play-mode-name" id="playModeName">FREEPLAY</div>
 <div class="play-bpm" id="playBpmLabel">90 BPM</div>
 </div>
@@ -838,7 +838,6 @@ var playScreen=document.getElementById('playScreen');
 var nameScreen=document.getElementById('nameScreen');
 var standingsScreen=document.getElementById('standingsScreen');
 var stopBtn=document.getElementById('stopBtn');
-var playBackBtn=document.getElementById('playBackBtn');
 var playModeName=document.getElementById('playModeName');
 var playBpmLabel=document.getElementById('playBpmLabel');
 
@@ -1031,11 +1030,6 @@ document.getElementById('startFullGameBtn').onclick=function(){
 
 stopBtn.onclick=function(){
 repCleanup();stopGame();showScreen('setup');
-};
-
-playBackBtn.onclick=function(){
-if(isPlaying){repCleanup();stopGame();}
-window.location.href='mobile-lab.html';
 };
 
 document.getElementById('endBackBtn').addEventListener('click',function(){

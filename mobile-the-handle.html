@@ -65,12 +65,9 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 
 /* 5×5 court — same proven court-rendering approach the other memory
    games already use, reshaped to grid. Only 5 of the 25 cells are
-   ever actually part of the game: dead center, plus one cell in
-   from each corner on the top and bottom rows — the same real
-   2-1-2 zone arrangement the desktop version's fixed key layout
-   uses, just mapped onto a grid instead of free positioning. The
-   other 20 cells exist purely as court texture, never light up,
-   never tappable. */
+   ever actually part of the game: dead center, plus all four true
+   corners. The other 20 cells exist purely as court texture, never
+   light up, never tappable. */
 .court5x5{
   display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);
   gap:8px;width:300px;height:300px;margin:0 auto;position:relative;
@@ -467,20 +464,17 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 var feedback=document.getElementById('feedback'),streakEl=document.getElementById('streak'),bestEl=document.getElementById('best'),scoreEl=document.getElementById('scoreVal'),congaRow=document.getElementById('congaRow'),confettiContainer=document.getElementById('confettiContainer'),milestone=document.getElementById('milestone'),gameArea=document.querySelector('.game-area');
 // 5×5 court — same proven court-rendering approach the other memory
 // games already use, reshaped to grid. Only 5 of the 25 cells are
-// ever actually part of the game: dead center, plus one cell in
-// from each corner on the top and bottom rows — the same real
-// 2-1-2 zone arrangement the desktop version's fixed key layout
-// uses, just mapped onto a grid instead of free positioning. The
-// rest of the grid is pure court texture — never lights up, never
-// tappable.
+// ever actually part of the game: dead center, plus all four true
+// corners. The rest of the grid is pure court texture — never
+// lights up, never tappable.
 (function buildFiveCellCourt(){
   var court=document.getElementById('congaRow');
   var activeMap={
     12:'conga0', // dead center (row 3, col 3 in a 5x5 grid, zero-indexed 12)
-    1:'conga1',  // top row, one in from the left
-    3:'conga2',  // top row, one in from the right
-    21:'conga3', // bottom row, one in from the left
-    23:'conga4'  // bottom row, one in from the right
+    0:'conga1',  // top-left corner
+    4:'conga2',  // top-right corner
+    20:'conga3', // bottom-left corner
+    24:'conga4'  // bottom-right corner
   };
   for(var i=0;i<25;i++){
     var el;
@@ -1041,7 +1035,7 @@ repCleanup();stopGame();showScreen('setup');
 
 playBackBtn.onclick=function(){
 if(isPlaying){repCleanup();stopGame();}
-showScreen('setup');
+window.location.href='mobile-lab.html';
 };
 
 document.getElementById('endBackBtn').addEventListener('click',function(){

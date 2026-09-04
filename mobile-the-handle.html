@@ -63,38 +63,43 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 /* GAME AREA */
 .game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0}
 
-/* BALL ROW - 5 ball diamond */
-.conga-row{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:10px;padding:15px;width:300px;height:300px;margin:0 auto;position:relative}
-.conga-row.three-drums{width:260px;height:200px;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr}
-.conga-row.three-drums .tap-conga{width:75px;height:75px}
-.conga-row.three-drums .tap-conga:nth-child(4),
-.conga-row.three-drums .tap-conga:nth-child(5){display:none}
-.conga-row.three-drums .tap-conga:nth-child(1){grid-area:1/1}
-.conga-row.three-drums .tap-conga:nth-child(2){grid-area:1/2}
-.conga-row.three-drums .tap-conga:nth-child(3){grid-area:1/3}
-
+/* 5×5 court — same proven court-rendering approach the other memory
+   games already use, reshaped to grid. Only 5 of the 25 cells are
+   ever actually part of the game: dead center, plus one cell in
+   from each corner on the top and bottom rows — the same real
+   2-1-2 zone arrangement the desktop version's fixed key layout
+   uses, just mapped onto a grid instead of free positioning. The
+   other 20 cells exist purely as court texture, never light up,
+   never tappable. */
+.court5x5{
+  display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);
+  gap:8px;width:300px;height:300px;margin:0 auto;position:relative;
+  border:2px solid rgba(124,58,237,.35);border-radius:14px;padding:10px;
+  background-color:#1a0f2e;
+  box-shadow:0 0 50px rgba(124,58,237,.2),inset 0 0 30px rgba(124,58,237,.05);
+}
+.cell-filler{border-radius:6px;background:rgba(124,58,237,.05);border:1.5px solid rgba(124,58,237,.15)}
 .tap-conga{
-  width:75px;height:75px;border-radius:50%;position:relative;opacity:0.8;transition:all 0.15s;
+  border-radius:50%;position:relative;opacity:0.8;transition:all 0.15s;width:100%;height:100%;padding:0;
   background:
     url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22c%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2249%22/%3E%3C/clipPath%3E%3C/defs%3E%3Cg%20clip-path%3D%22url%28%23c%29%22%20fill%3D%22none%22%20stroke%3D%22%23231005%22%20stroke-width%3D%223.4%22%3E%3Cline%20x1%3D%2250%22%20y1%3D%22-4%22%20x2%3D%2250%22%20y2%3D%22104%22/%3E%3Cpath%20d%3D%22M%20-4%2050%20Q%2050%20-4%20104%2050%22/%3E%3Cpath%20d%3D%22M%20-4%2050%20Q%2050%20104%20104%2050%22/%3E%3Cellipse%20cx%3D%2250%22%20cy%3D%2250%22%20rx%3D%2224%22%20ry%3D%2249%22/%3E%3C/g%3E%3C/svg%3E'),
     radial-gradient(circle at 35% 32%,#ffb35c,#ff8c00 55%,#d9660a 85%);
   background-size:100% 100%,100% 100%;
   box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 4px 12px rgba(0,0,0,0.4);
-  cursor:pointer;border:none;outline:none;-webkit-tap-highlight-color:transparent;justify-self:center;align-self:center
+  cursor:pointer;border:none;outline:none;-webkit-tap-highlight-color:transparent
 }
-.tap-conga:nth-child(1){grid-area:1/1;--conga-color:#FFD700;--conga-glow:rgba(255,215,0,0.6)}
-.tap-conga:nth-child(2){grid-area:1/3;--conga-color:#FF6B35;--conga-glow:rgba(255,107,53,0.6)}
-.tap-conga:nth-child(3){grid-area:2/2;--conga-color:#FF1493;--conga-glow:rgba(255,20,147,0.6)}
-.tap-conga:nth-child(4){grid-area:3/1;--conga-color:#00D9D9;--conga-glow:rgba(0,217,217,0.6)}
-.tap-conga:nth-child(5){grid-area:3/3;--conga-color:#9B59B6;--conga-glow:rgba(155,89,182,0.6)}
-.tap-conga:nth-child(1){box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,215,0,0.2),0 4px 12px rgba(0,0,0,0.4)}
-.tap-conga:nth-child(2){box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,107,53,0.2),0 4px 12px rgba(0,0,0,0.4)}
-.tap-conga:nth-child(3){box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,20,147,0.2),0 4px 12px rgba(0,0,0,0.4)}
-.tap-conga:nth-child(4){box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(0,217,217,0.2),0 4px 12px rgba(0,0,0,0.4)}
-.tap-conga:nth-child(5){box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(155,89,182,0.2),0 4px 12px rgba(0,0,0,0.4)}
-.tap-conga.tapped{opacity:1;transform:scale(1.15) translateY(-4px);box-shadow:0 0 40px var(--conga-glow),0 0 60px var(--conga-glow),0 8px 20px rgba(0,0,0,0.4)}
+/* Five genuinely distinct ball tints, matching the desktop version's
+   own principle — each is the same basketball texture, recolored,
+   so the "read the color" memory challenge stays intact instead of
+   collapsing into five identical orange balls. */
+#conga0{--conga-color:#FFD700;--conga-glow:rgba(255,215,0,0.6);box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,215,0,0.2),0 4px 12px rgba(0,0,0,0.4)}
+#conga1{--conga-color:#FF6B35;--conga-glow:rgba(255,107,53,0.6);box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,107,53,0.2),0 4px 12px rgba(0,0,0,0.4)}
+#conga2{--conga-color:#FF1493;--conga-glow:rgba(255,20,147,0.6);box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(255,20,147,0.2),0 4px 12px rgba(0,0,0,0.4)}
+#conga3{--conga-color:#00D9D9;--conga-glow:rgba(0,217,217,0.6);box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(0,217,217,0.2),0 4px 12px rgba(0,0,0,0.4)}
+#conga4{--conga-color:#9B59B6;--conga-glow:rgba(155,89,182,0.6);box-shadow:inset 0 -8px 15px rgba(0,0,0,0.35),0 0 15px rgba(155,89,182,0.2),0 4px 12px rgba(0,0,0,0.4)}
+.tap-conga.tapped{opacity:1;transform:scale(1.15);box-shadow:0 0 40px var(--conga-glow),0 0 60px var(--conga-glow),0 8px 20px rgba(0,0,0,0.4)}
 .tap-conga.lit{
-  opacity:1;transform:scale(1.2) translateY(-5px);
+  opacity:1;transform:scale(1.15);
   background:
     url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22c2%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2249%22/%3E%3C/clipPath%3E%3C/defs%3E%3Cg%20clip-path%3D%22url%28%23c2%29%22%20fill%3D%22none%22%20stroke%3D%22%23231005%22%20stroke-width%3D%223.4%22%3E%3Cline%20x1%3D%2250%22%20y1%3D%22-4%22%20x2%3D%2250%22%20y2%3D%22104%22/%3E%3Cpath%20d%3D%22M%20-4%2050%20Q%2050%20-4%20104%2050%22/%3E%3Cpath%20d%3D%22M%20-4%2050%20Q%2050%20104%20104%2050%22/%3E%3Cellipse%20cx%3D%2250%22%20cy%3D%2250%22%20rx%3D%2224%22%20ry%3D%2249%22/%3E%3C/g%3E%3C/svg%3E'),
     radial-gradient(circle at 35% 32%,#fff6c2,#ffd700 55%,#e0ac00 85%);
@@ -103,16 +108,14 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 }
 .tap-conga.hit-correct{animation:hitCorrect 0.2s ease-out}
 .tap-conga.hit-wrong{animation:hitWrong 0.3s ease-out}
-@keyframes hitCorrect{0%{transform:scale(1.2) translateY(-5px)}50%{transform:scale(1.4) translateY(-10px)}100%{transform:scale(1.2) translateY(-5px)}}
+@keyframes hitCorrect{0%{transform:scale(1.15)}50%{transform:scale(1.3)}100%{transform:scale(1.15)}}
 @keyframes hitWrong{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .tap-conga:active{transform:scale(0.95)}
-.conga-label{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:0.7rem;color:var(--cream);opacity:0.4;letter-spacing:1px}
 
-/* On fire */
-.conga-row.on-fire .tap-conga{box-shadow:0 0 20px rgba(255,107,53,0.4),0 4px 12px rgba(0,0,0,0.4)}
-.conga-row.on-fire .tap-conga.lit{box-shadow:0 0 40px var(--gold),0 0 60px var(--orange),0 8px 20px rgba(255,107,53,0.6)}
-.conga-row.fuego-mode .tap-conga{animation:flamePulse 0.3s ease-in-out infinite alternate;box-shadow:0 0 30px rgba(255,107,53,0.6),0 0 50px rgba(255,69,0,0.4),0 4px 12px rgba(0,0,0,0.4)}
-.conga-row.fuego-mode .tap-conga.lit{box-shadow:0 0 50px var(--gold),0 0 80px var(--orange),0 0 100px rgba(255,69,0,0.5),0 8px 20px rgba(255,107,53,0.6);animation:fuegoBurst 0.15s ease-out}
+.court5x5.on-fire .tap-conga{box-shadow:0 0 20px rgba(255,107,53,0.4),0 4px 12px rgba(0,0,0,0.4)}
+.court5x5.on-fire .tap-conga.lit{box-shadow:0 0 40px var(--gold),0 0 60px var(--orange),0 8px 20px rgba(255,107,53,0.6)}
+.court5x5.fuego-mode .tap-conga{animation:flamePulse 0.3s ease-in-out infinite alternate;box-shadow:0 0 30px rgba(255,107,53,0.6),0 0 50px rgba(255,69,0,0.4),0 4px 12px rgba(0,0,0,0.4)}
+.court5x5.fuego-mode .tap-conga.lit{box-shadow:0 0 50px var(--gold),0 0 80px var(--orange),0 0 100px rgba(255,69,0,0.5),0 8px 20px rgba(255,107,53,0.6);animation:fuegoBurst 0.15s ease-out}
 @keyframes flamePulse{0%{transform:scale(1);filter:brightness(1)}100%{transform:scale(1.03);filter:brightness(1.1)}}
 @keyframes fuegoBurst{0%{transform:scale(1.2) translateY(-5px)}50%{transform:scale(1.35) translateY(-8px)}100%{transform:scale(1.2) translateY(-5px)}}
 
@@ -349,7 +352,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 .tap-log-total{width:100%;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:var(--gold);margin-top:4px}
 .tap-log-empty{width:100%;text-align:center;color:rgba(255,255,255,.4);font-size:.8rem;padding:8px}
 
-@media(min-width:400px){.bori-hero-title{font-size:2.8rem}.intro-title{font-size:2.8rem}.conga-row{width:320px;height:320px}.tap-conga{width:80px;height:80px}.conga-row.three-drums{width:280px;height:210px}.conga-row.three-drums .tap-conga{width:80px;height:80px}}
+@media(min-width:400px){.bori-hero-title{font-size:2.8rem}.intro-title{font-size:2.8rem}.court5x5{width:320px;height:320px}}
 </style>
 </head>
 <body>
@@ -371,7 +374,7 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 </div>
 
 <button class="intro-playbook-btn" id="howToPlayBtn">📖 How to Play</button>
-<button class="play-now-btn" id="startFullGameBtn">🏀 PLAY 4 QUARTERS</button>
+<button class="play-now-btn" id="startFullGameBtn">🏀 PLAY</button>
 
 <div class="intro-footer">
 <div class="intro-footer-dot"></div>
@@ -387,18 +390,13 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 </div>
 
 <div class="game-area">
-<div class="conga-row" id="congaRow">
-<button class="tap-conga" id="conga0" data-index="0"><span class="conga-label">1</span></button>
-<button class="tap-conga" id="conga1" data-index="1"><span class="conga-label">2</span></button>
-<button class="tap-conga" id="conga2" data-index="2"><span class="conga-label">3</span></button>
-<button class="tap-conga" id="conga3" data-index="3"><span class="conga-label">4</span></button>
-<button class="tap-conga" id="conga4" data-index="4"><span class="conga-label">5</span></button>
-</div>
+<div class="court5x5" id="congaRow"></div>
 
 <div class="info-strip">
-<div class="info-box"><div class="info-label">Score</div><div class="info-value" id="scoreVal">0</div></div>
+<div class="info-box"><div class="info-label">Level</div><div class="info-value" id="scoreVal">0</div></div>
 <div class="info-box"><div class="info-label">Round</div><div class="info-value" id="streak">0</div></div>
 <div class="info-box"><div class="info-label">Best</div><div class="info-value" id="best">0</div></div>
+<div class="info-box"><div class="info-label">Time</div><div class="info-value" id="liveTime">0.0</div></div>
 </div>
 
 <div class="feedback"><div class="feedback-text" id="feedback"></div></div>
@@ -431,12 +429,6 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 
 <div class="challenge-complete" id="challengeComplete">
 <div class="challenge-result" id="challengeResult">YOU WIN!</div>
-<div class="qtr-board" id="qtrBoard" style="display:none;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:340px;margin:0 auto 14px">
-<div class="qtr-cell" id="qtrCell1"><div class="qtr-label">1st</div><div class="qtr-val" id="qtrVal1">0</div></div>
-<div class="qtr-cell" id="qtrCell2"><div class="qtr-label">2nd</div><div class="qtr-val" id="qtrVal2">0</div></div>
-<div class="qtr-cell" id="qtrCell3"><div class="qtr-label">3rd</div><div class="qtr-val" id="qtrVal3">0</div></div>
-<div class="qtr-cell" id="qtrCell4"><div class="qtr-label">4th</div><div class="qtr-val" id="qtrVal4">0</div></div>
-</div>
 <div class="challenge-stats" id="challengeStats"></div>
 <button class="challenge-retry-btn" id="retryBtn">TRY AGAIN!</button>
 <button class="setup-stats-btn" id="endStandingsBtn" style="border:1px solid rgba(255,215,0,.35);border-radius:100px;padding:10px 18px;margin-top:12px;color:var(--gold)">🏆 View Standings</button>
@@ -447,10 +439,6 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 </div>
 </div>
 
-<div class="challenge-complete" id="qtrNotice" style="background:rgba(0,0,0,.94)">
-<div class="challenge-result" id="qtrNoticeTitle">1ST QUARTER COMPLETE!</div>
-<div class="challenge-stats" id="qtrNoticeStats"></div>
-</div>
 <div class="repitelo-indicator" id="repiteloIndicator">🧠 WATCH...</div>
 <div class="repitelo-progress" id="repiteloProgress"></div>
 <div class="help-overlay" id="helpOverlay">
@@ -477,6 +465,38 @@ html,body{height:100%;overflow-x:hidden;font-family:'Outfit',sans-serif;backgrou
 <script>
 (function(){
 var feedback=document.getElementById('feedback'),streakEl=document.getElementById('streak'),bestEl=document.getElementById('best'),scoreEl=document.getElementById('scoreVal'),congaRow=document.getElementById('congaRow'),confettiContainer=document.getElementById('confettiContainer'),milestone=document.getElementById('milestone'),gameArea=document.querySelector('.game-area');
+// 5×5 court — same proven court-rendering approach the other memory
+// games already use, reshaped to grid. Only 5 of the 25 cells are
+// ever actually part of the game: dead center, plus one cell in
+// from each corner on the top and bottom rows — the same real
+// 2-1-2 zone arrangement the desktop version's fixed key layout
+// uses, just mapped onto a grid instead of free positioning. The
+// rest of the grid is pure court texture — never lights up, never
+// tappable.
+(function buildFiveCellCourt(){
+  var court=document.getElementById('congaRow');
+  var activeMap={
+    12:'conga0', // dead center (row 3, col 3 in a 5x5 grid, zero-indexed 12)
+    1:'conga1',  // top row, one in from the left
+    3:'conga2',  // top row, one in from the right
+    21:'conga3', // bottom row, one in from the left
+    23:'conga4'  // bottom row, one in from the right
+  };
+  for(var i=0;i<25;i++){
+    var el;
+    if(activeMap[i]){
+      el=document.createElement('button');
+      el.id=activeMap[i];
+      el.className='tap-conga';
+      el.setAttribute('data-index',activeMap[i].slice(-1));
+    }else{
+      el=document.createElement('div');
+      el.className='cell-filler';
+    }
+    court.appendChild(el);
+  }
+})();
+
 var tapCongas=[document.getElementById('conga0'),document.getElementById('conga1'),document.getElementById('conga2'),document.getElementById('conga3'),document.getElementById('conga4')];
 var drumCount=5;
 
@@ -493,8 +513,6 @@ document.getElementById('howToPlayBtn').addEventListener('touchstart',function(e
 function showCountdown(cb){var count=3;countdownOverlay.classList.add('show');countdownNumber.textContent=count;var ci=setInterval(function(){count--;if(count>0){countdownNumber.textContent=count;countdownNumber.style.animation='none';void countdownNumber.offsetWidth;countdownNumber.style.animation='countdownPop 0.8s ease-out';playCongaHit(2,'good')}else if(count===0){countdownNumber.textContent="GO!";countdownNumber.style.animation='none';void countdownNumber.offsetWidth;countdownNumber.style.animation='countdownPop 0.8s ease-out';playCongaRoll()}else{clearInterval(ci);countdownOverlay.classList.remove('show');if(cb)cb()}},1000)}
 
 retryBtn.onclick=function(){
-  currentQuarter=1;
-  quarterScores=[0,0,0,0];
   showScreen('play');showCountdown(function(){repStart();});
 };
 
@@ -576,13 +594,22 @@ var repIsPlaying=false;
 var repIsListening=false;
 var repPlaybackTimeout=null;
 var repShotLog=[];
+var runStartTime=0;
 
 function repStart(){
 repSequence=[];repRound=0;repPlayerIndex=0;repIsPlaying=false;repIsListening=false;repShotLog=[];
 isPlaying=true;
+runStartTime=performance.now();
 score=0;scoreEl.textContent=0;
 streakEl.textContent=0;
+document.getElementById('liveTime').textContent='0.0';
 repNextRound();
+requestAnimationFrame(updateLiveTime);
+}
+function updateLiveTime(){
+if(!isPlaying)return;
+document.getElementById('liveTime').textContent=((performance.now()-runStartTime)/1000).toFixed(1);
+requestAnimationFrame(updateLiveTime);
 }
 
 function repNextRound(){
@@ -652,7 +679,7 @@ if(nd)nd.classList.add('current');
 }
 if(repPlayerIndex>=repSequence.length){
 repIsListening=false;
-score+=repRound;scoreEl.textContent=score;
+score=repRound;scoreEl.textContent=score;
 repShotLog.push({hit:true,round:repRound,pts:repRound});
 repiteloIndicator.textContent='NICE! 🔥 Round '+repRound+' complete';
 repiteloIndicator.className='repitelo-indicator listening';
@@ -687,46 +714,19 @@ repiteloIndicator.className='repitelo-indicator';
 repiteloProgress.classList.remove('show');
 tapCongas.forEach(function(c){c.classList.remove('lit')});
 
-var completed=repRound-1;
-quarterScores[currentQuarter-1]=score;
-
-if(currentQuarter<4){
-  showQuarterNotice(completed);
-}else{
-  showFullGameFinal(completed);
-}
+var finalLevel=repRound-1;
+var finalTime=(performance.now()-runStartTime)/1000;
+showFinalScore(finalLevel,finalTime);
 }
 
-// ── Game mode, quarters 1-3: a brief, automatic notice — no button,
-// no navigation risk, just a pause long enough to read the result
-// before the same loop restarts fresh for the next quarter.
-function showQuarterNotice(completed){
-  var labels=['1ST','2ND','3RD','4TH'];
-  document.getElementById('qtrNoticeTitle').textContent=labels[currentQuarter-1]+' QUARTER COMPLETE!';
-  document.getElementById('qtrNoticeStats').textContent='Score: '+score+' · Rounds: '+completed;
-  document.getElementById('qtrNotice').classList.add('show');
-  setTimeout(function(){
-    document.getElementById('qtrNotice').classList.remove('show');
-    currentQuarter++;
-    showScreen('play');
-    showCountdown(function(){repStart()});
-  },2500);
-}
-
-// ── Game mode, quarter 4: the real, tracked end — full Q1-Q4
-// breakdown, the honest save with the same lock-until-saved
-// protection used everywhere else, since leaving mid-save is exactly
-// what silently loses entries.
-function showFullGameFinal(){
-  var total=quarterScores[0]+quarterScores[1]+quarterScores[2]+quarterScores[3];
-  challengeResult.textContent=total>=40?'GOLDEN MEMORY! 🧠':total>=20?'GREAT JOB! 🔥':'GOOD TRY! 💪';
-  challengeResult.className='challenge-result '+(total>=20?'win':'lose');
-  document.getElementById('qtrBoard').style.display='grid';
-  for(var i=1;i<=4;i++){
-    document.getElementById('qtrVal'+i).textContent=quarterScores[i-1];
-    document.getElementById('qtrCell'+i).classList.toggle('qtr-current',i===4);
-  }
-  challengeStats.textContent='Final Score: '+total;
+// The real, tracked end — one miss ends the whole run. The honest
+// save with the same lock-until-saved protection used everywhere
+// else, since leaving mid-save is exactly what silently loses
+// entries.
+function showFinalScore(finalLevel,finalTime){
+  challengeResult.textContent=finalLevel>=15?'GOLDEN MEMORY! 🧠':finalLevel>=8?'GREAT JOB! 🔥':'GOOD TRY! 💪';
+  challengeResult.className='challenge-result '+(finalLevel>=8?'win':'lose');
+  challengeStats.textContent='Level Reached: '+finalLevel+' · Time: '+finalTime.toFixed(1)+'s';
   document.getElementById('endStandingsBtn').style.display='';
   document.getElementById('handleStandingsStatus').style.display='';
   playCongaRoll();launchConfetti();
@@ -753,7 +753,7 @@ function showFullGameFinal(){
   }
   setTimeout(unlockNav,6000);
 
-  recordFullGameToStandings(currentPlayerName,quarterScores[0],quarterScores[1],quarterScores[2],quarterScores[3]).then(function(ok){
+  recordScoreToStandings(currentPlayerName,finalLevel,finalTime).then(function(ok){
     if(ok){
       statusEl.textContent='✓ Saved to standings';
       statusEl.style.color='#00D9A5';
@@ -874,19 +874,20 @@ standingsScreen.classList.add('show');
 // is a single, untracked run with no name and no standings entry.
 var SB_URL='https://sdaphocueugzfvjovuxd.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
-var SB_4QTR_TABLE='ritnome_mobile_handle_4qtr_standings';
+// Standings — its own dedicated table, matching the new score shape
+// exactly (a level reached, plus the real elapsed time it took to
+// get there) rather than reusing the old 4-quarter breakdown table,
+// which no longer reflects what's actually being played.
+var SB_TABLE='ritnome_mobile_fortress_standings';
 var currentPlayerName='';
-var currentQuarter=1;
-var quarterScores=[0,0,0,0];
 
-function recordFullGameToStandings(name,q1,q2,q3,q4){
-  var total=q1+q2+q3+q4;
+function recordScoreToStandings(name,levelAchieved,timeSeconds){
   var school='';
   try{school=localStorage.getItem('rct-mobile-school')||''}catch(e){}
-  return fetch(SB_URL+'/rest/v1/'+SB_4QTR_TABLE,{
+  return fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
     method:'POST',
     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body:JSON.stringify({player_name:name,q1_score:q1,q2_score:q2,q3_score:q3,q4_score:q4,total_score:total,school_name:school})
+    body:JSON.stringify({player_name:name,level_achieved:levelAchieved,time_seconds:timeSeconds,school_name:school})
   }).then(function(res){
     // fetch() only rejects on a genuine network failure — a rejected
     // insert (bad schema, RLS, etc.) still resolves normally with a
@@ -894,13 +895,13 @@ function recordFullGameToStandings(name,q1,q2,q3,q4){
     // save looks identical to a successful one to the caller.
     if(!res.ok){
       return res.text().then(function(body){
-        console.error('The Fortress 4-quarter standings write failed:',res.status,body);
+        console.error('The Fortress standings write failed:',res.status,body);
         return false;
       });
     }
     return true;
   }).catch(function(e){
-    console.error('The Fortress 4-quarter standings write — network error:',e);
+    console.error('The Fortress standings write — network error:',e);
     return false;
   });
 }
@@ -908,7 +909,7 @@ function recordFullGameToStandings(name,q1,q2,q3,q4){
 function fetchStandings(){
   var school='';
   try{school=localStorage.getItem('rct-mobile-school')||''}catch(e){}
-  var url=SB_URL+'/rest/v1/'+SB_4QTR_TABLE+'?select=player_name,q1_score,q2_score,q3_score,q4_score,total_score&order=total_score.desc&limit=100'
+  var url=SB_URL+'/rest/v1/'+SB_TABLE+'?select=player_name,level_achieved,time_seconds&limit=500'
     +'&school_name=eq.'+encodeURIComponent(school);
   return fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
     .then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})
@@ -916,9 +917,27 @@ function fetchStandings(){
       var best={};
       (rows||[]).forEach(function(r){
         var existing=best[r.player_name];
-        if(!existing||r.total_score>existing.total_score) best[r.player_name]=r;
+        // A higher level always wins outright; among rows tied at a
+        // player's own best level, the faster time is what actually
+        // gets kept. A row with no recorded time never beats a real,
+        // timed one at the same level.
+        var isBetter=false;
+        if(!existing){
+          isBetter=true;
+        }else if(r.level_achieved>existing.level_achieved){
+          isBetter=true;
+        }else if(r.level_achieved===existing.level_achieved){
+          if(r.time_seconds!=null&&(existing.time_seconds==null||r.time_seconds<existing.time_seconds)){
+            isBetter=true;
+          }
+        }
+        if(isBetter)best[r.player_name]=r;
       });
-      return Object.keys(best).map(function(n){return best[n]}).sort(function(a,b){return b.total_score-a.total_score});
+      return Object.keys(best).map(function(n){return best[n]}).sort(function(a,b){
+        if(b.level_achieved!==a.level_achieved)return b.level_achieved-a.level_achieved;
+        var at=a.time_seconds==null?Infinity:a.time_seconds, bt=b.time_seconds==null?Infinity:b.time_seconds;
+        return at-bt;
+      });
     });
 }
 
@@ -948,17 +967,15 @@ function renderStandings(){
     listEl.innerHTML=ranked.map(function(p,i){
       var rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
       var safeName=String(p.player_name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      var timeDisplay=p.time_seconds==null?'--':p.time_seconds.toFixed(2)+'s';
       return '<div>'
         +'<div class="standings-row '+rankClass+'" data-idx="'+i+'">'
           +'<span class="standings-rank">'+(i+1)+'</span>'
           +'<span class="standings-name">'+safeName+'</span>'
-          +'<span class="standings-pts">'+p.total_score+'</span>'
+          +'<span class="standings-pts">'+p.level_achieved+'</span>'
         +'</div>'
-        +'<div class="qtr-detail" id="detail-'+i+'">'
-          +'<div class="qtr-cell"><div class="qtr-label">1st</div><div class="qtr-val">'+p.q1_score+'</div></div>'
-          +'<div class="qtr-cell"><div class="qtr-label">2nd</div><div class="qtr-val">'+p.q2_score+'</div></div>'
-          +'<div class="qtr-cell"><div class="qtr-label">3rd</div><div class="qtr-val">'+p.q3_score+'</div></div>'
-          +'<div class="qtr-cell"><div class="qtr-label">4th</div><div class="qtr-val">'+p.q4_score+'</div></div>'
+        +'<div class="qtr-detail" id="detail-'+i+'" style="grid-template-columns:1fr;max-width:160px;margin:0 auto">'
+          +'<div class="qtr-cell"><div class="qtr-label">Speed</div><div class="qtr-val">'+timeDisplay+'</div></div>'
         +'</div>'
       +'</div>';
     }).join('');
@@ -1001,8 +1018,6 @@ document.getElementById('nameContinueBtn').addEventListener('click',function(){
     return;
   }
   currentPlayerName=name.slice(0,20);
-  currentQuarter=1;
-  quarterScores=[0,0,0,0];
   showScreen('play');
   showCountdown(function(){repStart()});
 });
@@ -1010,7 +1025,7 @@ document.getElementById('playerNameInput').addEventListener('keydown',function(e
   if(e.key==='Enter')document.getElementById('nameContinueBtn').click();
 });
 
-// Play 4 Quarters — the real, tracked Game mode. A name is required
+// Play — the real, tracked run. A name is required
 // up front since this run genuinely gets saved to standings.
 document.getElementById('startFullGameBtn').onclick=function(){
   initAudio();
